@@ -98,17 +98,17 @@ def load_data():
 df = load_data()
 
 # --- CONTENT DICTIONARIES ---
-sdr_summaries = {
-    "Ben": "The undeniable top producer. Adapted brilliantly to a shrinking TAM by shifting to the Nooks power dialer.",
-    "Feddy": "Battling the tough US market. Had a great Jan breakthrough. Thriving and increasing call volume under Ben's hybrid leadership.",
-    "Heike": "Elite conversion metrics in a limited DACH D2C TAM. Perfectly executes the 'sniper' strategy required so she never burns accounts.",
-    "Ilana": "Possesses the highest raw talent for engagement on the team in Benelux. Just needs to fix her volume bottleneck.",
-    "Jessica": "The most disciplined rep. Took a massive hit to her B2C DACH territory but never wavered from her multi-channel cadence.",
-    "Laura": "Putting in high activity but heavily call-reluctant with broken email messaging. Needs the biggest strategic reset.",
-    "Lea": "The anchor of predictability in the UK/Nordics. Provides incredible pipeline predictability almost every single week.",
-    "Rozanne": "Capable of high volume and great event follow-up, but 0-call weeks and 0% cold email reply rates are holding her back.",
-    "Aiko": "The reliable engine in ANZ/SEA. Steadily increasing volume under Ben's guidance to provide cost-effective upside.",
-    "Max": "The newest US SDR. Needs strict daily scheduling and immediate onboarding onto Nooks to prevent call reluctance."
+sdr_analytics = {
+    "Ben": "**The Situation:** Ben ran out of runway on emails due to his D2C TAM limits, but brilliantly pivoted to Nooks to aggressively call his best prospects. This led to a massive 12.1% connect rate in January.\n\n**Strengths:** Highly adaptable, proven closer (14 meetings in Nov, 14 in Jan).\n\n**Action Item:** Review his Nooks strategy. Ensure he has enough fresh, verified data to sustain his high call volume so he doesn't burn through his 'creme de la creme' list too quickly.",
+    "Feddy": "**The Situation:** Started in Q4. His erratic channel-switching in late Dec/Jan was caused by shifting his focus to booking NRF conference meetings rather than pure outbound. However, he still managed a mysterious and impressive spike of 4 outbound meetings in Jan Week 3.\n\n**Strengths:** Hustle and persistence in a brutal market. He survived a zero-meeting ramp-up to book 6 in January.\n\n**Action Item:** Dissect his Jan Week 3 outbound spike. Find out what messaging he used. Help him build a consistent, daily multi-channel cadence now that the conference disruptions are over and he has a redefined account list.",
+    "Heike": "**The Situation:** Operating with a very limited TAM, she plays the 'sniper.' Her engagement rates are elite (reply rates regularly hitting 10–12%+, connect rates consistently solid).\n\n**Strengths:** World-class personalization and DACH market mastery.\n\n**Action Item:** Do not force her to do mindless volume, as it will ruin her TAM. Instead, ask her to template her most successful hooks and share them with Jessica (who is struggling slightly with volume in DACH B2C).",
+    "Ilana": "**The Situation:** Leveraging native language skills to achieve absurdly high conversion metrics (up to 33.3% connect rates and 17.5% reply rates). Her volume, however, is critically low.\n\n**Strengths:** Elite local engagement. When she touches an account, she converts it.\n\n**Action Item:** Focus 100% on workflow optimization. Sit with her to figure out why a single touchpoint takes her so long. If you can help her double her volume (which would still be relatively low), she will easily become your top meeting booker.",
+    "Jessica": "**The Situation:** She was a volume machine (700+ activities/week) until her territory was reduced to just B2C. Her volume naturally halved, but she remained perfectly consistent in her execution.\n\n**Strengths:** Discipline. She maintained a true multi-channel approach despite the frustrating drop in meetings.\n\n**Action Item:** Validate her consistency. Facilitate a strategy session between her and Heike to see if Heike's high-converting DACH hooks can be adapted for Jessica's B2C accounts to increase her yield.",
+    "Laura": "**The Situation:** Slogged through the US market, attended NRF, took vacation, and is now working with a redefined list. She actively dislikes making calls and defaults to email, but her email reply rate is essentially 0%.\n\n**Strengths:** Willing to put in high overall activity volume (regularly 600–700+ touches/week).\n\n**Action Item:** This is a critical intervention. You must rewrite her US email sequences entirely. Concurrently, use the Nooks parallel dialer to help her overcome her call reluctance. She cannot survive in the US market hiding behind 0% reply rate emails.",
+    "Lea": "**The Situation:** A true 'Steady Eddy.' She books 1-2 meetings almost every single week with excellent connect rates (11-17%+). Her low activity in late Dec was due to targeted outreach, and Oct was vacation.\n\n**Strengths:** Reliability and great phone presence.\n\n**Action Item:** Find out what is causing her total activity volume to dip into the 100-300 range recently compared to her 500+ baseline in November. Have her share her UK/Nordics call openers with the team.",
+    "Rozanne": "**The Situation:** Had a massive 16.7% reply rate on 20 emails due to brilliant NRF conference follow-up. Proved she can use Nooks (304 calls in Dec), but has a serious red flag: 4 weeks of 0 calls despite not being fully on vacation.\n\n**Strengths:** Capable of high volume, excellent at event follow-up.\n\n**Action Item:** Address the 0-call month immediately. Since she already proved Nooks works for her, mandate its use to ensure she hits a minimum weekly call threshold. Pair her with Laura to rewrite their standard US outbound emails.",
+    "Aiko": "**The Situation:** She provides steady, low-risk upside in non-core markets. Under Ben's hybrid leadership, she has successfully grown her call volume from the 80/week range up to 150–180+ calls a week. Her connect rates are low (mostly 0–6%), but this is a known systemic issue with bad data in her regions, not a lack of effort.\n\n**Strengths:** Incredibly consistent, reliable, and highly coachable (proven by her steady volume growth).\n\n**Action Item:** Decouple her connect rates from her performance review until the data issue is fixed. Praise her dialing consistency, and work on standardizing the specific email hooks she used in late February that yielded 3–4.2% reply rates.",
+    "Max": "**The Situation:** The newest US SDR, just ramping up.\n\n**Strengths:** Blank slate, ready to learn.\n\n**Action Item:** Start on Nooks Day 1. Set expectations that 50 dials for 2 conversations is normal. Email is a supplement, phone is the primary weapon."
 }
 
 coaching_plans = {
@@ -209,39 +209,43 @@ if view == "🏆 Team Overview & Rankings":
         "Emails Sent": st.column_config.Column("Emails", width="small"),
     }, use_container_width=True)
 
+    st.markdown("---")
+    st.subheader("📊 Team-Wide Trends & Strategic Observations")
+    st.markdown("""
+    * **The Nooks (Power Dialer) Impact:** The introduction of Nooks is a game-changer. Ben used it to aggressively pivot to calling his "creme de la creme" list, which spiked his results. Rozanne proved it works during the early December POC (hitting 304 calls). **Action:** Nooks adoption should be heavily encouraged for reps struggling with call volume (like Laura and Rozanne) to lower the barrier to dialing.
+    * **The US Market "Email Black Hole":** Your US team (Laura, Rozanne) is facing near 0% email reply rates across the board. Outbound email in the US requires a complete teardown and rebuild, likely shifting to highly personalized, shorter messaging, or relying much heavier on the phones.
+    * **TAM Constraints are Real:** Ben, Heike, and Jessica have all been visibly restricted by their territory limits (D2C vs. B2C limits in specific regions). This requires them to have much higher conversion rates because they simply cannot brute-force high volume without burning their total addressable market (TAM).
+    """)
+
 # --- VIEW 2: INDIVIDUAL DEEP DIVE ---
 elif view == "🔍 Individual Deep Dive":
     st.header("SDR Data Deep Dive")
     selected_sdr = st.selectbox("Select SDR:", df["SDR"].unique())
     sdr_data = df[df["SDR"] == selected_sdr]
     
-    st.info(f"**Analysis:** {sdr_summaries.get(selected_sdr, 'No summary available.')}")
+    st.markdown("### 👤 SDR Analytics & Action Plan")
+    st.info(sdr_analytics.get(selected_sdr, "No detailed analytics available."))
+    st.markdown("---")
+    
     st.subheader(f"Recent Trends for {selected_sdr}")
     
-    # -----------------------------------------------------
-    # NEW GRAPH LAYOUT: 3 Rows, 2 Columns per Row
-    # Row 1: Top Line Metrics
     row1_col1, row1_col2 = st.columns(2)
     with row1_col1:
         st.plotly_chart(px.line(sdr_data, x="Week", y="Total Activities", title="Total Activities 🦎", markers=True, color_discrete_sequence=[ql_green]), use_container_width=True)
     with row1_col2:
-        # Renamed graph to Outbound Meetings
         st.plotly_chart(px.bar(sdr_data, x="Week", y="Meetings Booked", title="Outbound Meetings 🦎", labels={"Meetings Booked": "Outbound Meetings"}, color_discrete_sequence=[ql_green]), use_container_width=True)
         
-    # Row 2: Phone Performance
     row2_col1, row2_col2 = st.columns(2)
     with row2_col1:
         st.plotly_chart(px.line(sdr_data, x="Week", y="Calls Logged", title="Calls Logged 🦎", markers=True, color_discrete_sequence=[ql_green]), use_container_width=True)
     with row2_col2:
         st.plotly_chart(px.line(sdr_data, x="Week", y="Connect %", title="Connected Calls % 🦎", markers=True, color_discrete_sequence=[ql_green]), use_container_width=True)
 
-    # Row 3: Email Performance
     row3_col1, row3_col2 = st.columns(2)
     with row3_col1:
         st.plotly_chart(px.line(sdr_data, x="Week", y="Emails Sent", title="Emails Sent 🦎", markers=True, color_discrete_sequence=[ql_green]), use_container_width=True)
     with row3_col2:
         st.plotly_chart(px.line(sdr_data, x="Week", y="Reply %", title="Reply % 🦎", markers=True, color_discrete_sequence=[ql_green]), use_container_width=True)
-    # -----------------------------------------------------
 
 # --- VIEW 3: 1:1 COACHING ADVICE ---
 elif view == "🗣️ 1:1 Coaching Advice":

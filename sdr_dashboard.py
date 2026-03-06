@@ -196,7 +196,6 @@ if view == "🏆 Team Overview & Rankings":
     
     st.subheader(f"SDR Ranking by Meetings Booked ({time_filter})")
     
-    # We chained the "Purples" color map for the Emails Sent column right here!
     styled_df = team_stats.style.background_gradient(subset=["Meetings Booked"], cmap="Greens")\
         .background_gradient(subset=["Total Activities"], cmap="Blues")\
         .background_gradient(subset=["Calls Logged"], cmap="Oranges")\
@@ -219,15 +218,30 @@ elif view == "🔍 Individual Deep Dive":
     st.info(f"**Analysis:** {sdr_summaries.get(selected_sdr, 'No summary available.')}")
     st.subheader(f"Recent Trends for {selected_sdr}")
     
-    col1, col2 = st.columns(2)
-    with col1:
+    # -----------------------------------------------------
+    # NEW GRAPH LAYOUT: 3 Rows, 2 Columns per Row
+    # Row 1: Top Line Metrics
+    row1_col1, row1_col2 = st.columns(2)
+    with row1_col1:
         st.plotly_chart(px.line(sdr_data, x="Week", y="Total Activities", title="Total Activities 🦎", markers=True, color_discrete_sequence=[ql_green]), use_container_width=True)
-        st.plotly_chart(px.line(sdr_data, x="Week", y="Connect %", title="Connected Calls % 🦎", markers=True, color_discrete_sequence=[ql_green]), use_container_width=True)
-        st.plotly_chart(px.bar(sdr_data, x="Week", y="Meetings Booked", title="Meetings Booked 🦎", color_discrete_sequence=[ql_green]), use_container_width=True)
-    with col2:
+    with row1_col2:
+        # Renamed graph to Outbound Meetings
+        st.plotly_chart(px.bar(sdr_data, x="Week", y="Meetings Booked", title="Outbound Meetings 🦎", labels={"Meetings Booked": "Outbound Meetings"}, color_discrete_sequence=[ql_green]), use_container_width=True)
+        
+    # Row 2: Phone Performance
+    row2_col1, row2_col2 = st.columns(2)
+    with row2_col1:
         st.plotly_chart(px.line(sdr_data, x="Week", y="Calls Logged", title="Calls Logged 🦎", markers=True, color_discrete_sequence=[ql_green]), use_container_width=True)
+    with row2_col2:
+        st.plotly_chart(px.line(sdr_data, x="Week", y="Connect %", title="Connected Calls % 🦎", markers=True, color_discrete_sequence=[ql_green]), use_container_width=True)
+
+    # Row 3: Email Performance
+    row3_col1, row3_col2 = st.columns(2)
+    with row3_col1:
         st.plotly_chart(px.line(sdr_data, x="Week", y="Emails Sent", title="Emails Sent 🦎", markers=True, color_discrete_sequence=[ql_green]), use_container_width=True)
+    with row3_col2:
         st.plotly_chart(px.line(sdr_data, x="Week", y="Reply %", title="Reply % 🦎", markers=True, color_discrete_sequence=[ql_green]), use_container_width=True)
+    # -----------------------------------------------------
 
 # --- VIEW 3: 1:1 COACHING ADVICE ---
 elif view == "🗣️ 1:1 Coaching Advice":

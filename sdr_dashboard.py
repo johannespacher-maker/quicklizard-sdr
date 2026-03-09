@@ -257,10 +257,39 @@ elif view == "🗣️ 1:1 Coaching Advice":
 
 # --- VIEW 4: SPECIAL PROJECTS ---
 elif view == "🚀 Special Projects":
-    st.header("Strategic Initiatives")
-    project = st.selectbox("Select Project:", ["Preparing Max (New US SDR)", "The 'Ben Effect' (Leadership)", "The US 'Bad Lists' Excuse"])
+    st.header("Strategic Initiatives & Focus Areas")
+    project = st.selectbox("Select Project:", [
+        "Issues to fix",
+        "Preparing Max (New US SDR)", 
+        "The 'Ben Effect' (Leadership)", 
+        "The US 'Bad Lists' Excuse"
+    ])
     
-    if project == "Preparing Max (New US SDR)":
+    if project == "Issues to fix":
+        st.markdown("""
+        ### 1. The "Activity Illusion" (Laura vs. Ben)
+        High activity does not equal high output on this team. 
+        * **Laura:** 12,504 all-time activities, but only 8 meetings.
+        * **Ben:** 12,553 all-time activities, but has 44 meetings.
+        * **The Why:** Laura is hiding behind email in the US market, and her reply rate is a flat 0.0% for almost the entire 5 months. Ben is heavily leveraging the phones. 
+        * **The Fix:** This proves that in your current markets, blind email volume without phone execution is completely dead. We need to reset Laura's workflow to prioritize calls.
+        
+        ---
+        
+        ### 2. The Conversion vs. Volume Tragedy (Ilana vs. Feddy)
+        A massive mismatch between who has the talent and who is doing the work.
+        * **Ilana:** Has absolutely elite conversion skills (connect rates routinely hit 17%, 25%, and 33%, with the best reply rates on the team). But her call volume is almost non-existent (often under 45 calls *a week*). Because she isn't dialing, she only has 3 meetings this quarter.
+        * **Feddy:** Grinding in the brutal US market with terrible connect rates (1% to 3%). But because he uses Nooks to push his call volume up into the 200–300+ range, he managed to grind out 7 meetings this quarter.
+        * **The Fix:** If you can get Ilana to adopt Feddy's work ethic, or if you can give Feddy Ilana's European market lists, your pipeline would explode.
+
+        ---
+
+        ### 3. The "Key Person" Risk
+        Ben is completely carrying the team.
+        * **The Risk:** With 44 all-time meetings, he has booked nearly double the next highest rep (Jessica, with 23). If Ben takes a two-week vacation, or if his "creme de la creme" account list runs dry, the entire team's target is in serious jeopardy.
+        * **The Fix:** You desperately need to clone Ben's Nooks/Dialer framework and force the bottom half of the leaderboard to adopt it.
+        """)
+    elif project == "Preparing Max (New US SDR)":
         st.markdown("""
         ### Onboarding Max to the US Market
         * **Email is a Supplement:** Do not let him hide behind email. US reply rates are too low.

@@ -214,11 +214,15 @@ elif view == "🔍 Individual Deep Dive":
 elif view == "🗣️ 1:1 Coaching Advice":
     st.header("1:1 Coaching Agendas")
     
-    # This pulls the dropdown options directly from your new Google Sheet!
     if coaching_plans:
         selected_sdr_coach = st.selectbox("Select SDR for 1:1 Prep:", list(coaching_plans.keys()))
         st.subheader(f"Action Plan for {selected_sdr_coach}")
-        st.write(coaching_plans[selected_sdr_coach])
+        
+        # Grab the text and force double line breaks before the numbers so Markdown renders a clean list!
+        raw_text = coaching_plans[selected_sdr_coach]
+        formatted_text = raw_text.replace(" 1.", "\n\n1.").replace(" 2.", "\n\n2.").replace(" 3.", "\n\n3.").replace(" 4.", "\n\n4.")
+        
+        st.markdown(formatted_text)
     else:
         st.info("Coaching data not found. Please check your Google Sheets connection.")
 

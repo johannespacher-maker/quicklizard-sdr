@@ -114,6 +114,21 @@ def load_coaching_data():
 # Load the data and create the dictionaries the dashboard expects
 sdr_analytics, coaching_plans = load_coaching_data()
 
+# --- GOOGLE SHEETS SPECIAL PROJECTS ENGINE ---
+@st.cache_data(ttl=600)
+def load_projects_data():
+    # Replace with your NEW Special Projects tab CSV link!
+    sheet_url_projects = "PASTE_YOUR_PROJECTS_CSV_LINK_HERE"
+    df_proj = pd.read_csv(sheet_url_projects)
+    
+    projects_dict = {}
+    for index, row in df_proj.iterrows():
+        # This replaces the <br> tags from Google Sheets with actual Markdown line breaks!
+        projects_dict[row['Project Title']] = str(row['Content']).replace("<br>", "\n")
+    return projects_dict
+
+projects_data = load_projects_data()
+
 # --- SIDEBAR NAVIGATION ---
 st.sidebar.title("🦎 Quicklizard Menu")
 view = st.sidebar.radio("Go to:", ["🏆 Team Overview & Rankings", "🔍 Individual Deep Dive", "🗣️ 1:1 Coaching Advice", "🚀 Special Projects"])
@@ -229,26 +244,10 @@ elif view == "🗣️ 1:1 Coaching Advice":
 # --- VIEW 4: SPECIAL PROJECTS ---
 elif view == "🚀 Special Projects":
     st.header("Strategic Initiatives & Focus Areas")
-    project = st.selectbox("Select Project:", ["Issues to fix", "The iPhone Screener Bypass Playbook", "Preparing Max (New US SDR)", "The 'Ben Effect' (Leadership)", "The US 'Bad Lists' Excuse"])
     
-    if project == "Issues to fix":
-        st.markdown("""
-        ### 1. The "Activity Illusion" (Laura vs. Ben)
-        High activity does not equal high output on this team. 
-        * **The Why:** Laura is hiding behind email in the US market, and her reply rate is a flat 0.0% for almost the entire 5 months. Ben is heavily leveraging the phones. 
-        * **The Fix:** This proves that in your current markets, blind email volume without phone execution is completely dead. We need to reset Laura's workflow to prioritize calls.
-        
-        ### 2. The Conversion vs. Volume Tragedy (Ilana vs. Feddy)
-        A massive mismatch between who has the talent and who is doing the work.
-        * **Ilana:** Has absolutely elite conversion skills. But her call volume is almost non-existent.
-        * **Feddy:** Grinding in the brutal US market with terrible connect rates (1% to 3%). But because he uses Nooks to push volume, he booked 7 meetings.
-        * **The Fix:** Get Ilana to adopt Feddy's work ethic.
-        """)
-    elif project == "The iPhone Screener Bypass Playbook":
-        st.markdown("### 📱 Bypassing the iOS 17 Call Screeners\n\n**1. The 'Live Voicemail' Hack**\nDrop a hyper-relevant hook immediately when the voicemail beep sounds so the transcript shows their name.\n\n**2. The Siri Signature Trick**\nEnsure their Nooks number is in their email signature. Siri scans Apple Mail and overrides unknown caller blocks.\n\n**3. The 'Double Dial'**\nCall once, let it ring, hang up, immediately call back to break 'Do Not Disturb' blocks on Tier 1 accounts.\n\n**4. The Pre-Call Bump**\nSend a LinkedIn voice note 10 minutes before dialing.")
-    elif project == "Preparing Max (New US SDR)":
-        st.markdown("### Onboarding Max\n* **Nooks on Day 1:** Get him comfortable with 100+ dials immediately to prevent call reluctance.\n* **Expectation Setting:** 50 dials for 2 conversations is normal.\n* **Consistency:** Establish a rigid schedule to prevent erratic channel hopping.")
-    elif project == "The 'Ben Effect' (Leadership)":
-        st.markdown("### Tracking Ben's Leadership Impact\n* **The Data:** Aiko's calls jumped from ~80/week to 150-180+/week. Feddy's calls spiked to 245+ in Feb.\n* **Action:** Explicitly praise Ben's leadership in his 1:1.")
-    elif project == "The US 'Bad Lists' Excuse":
-        st.markdown("### Debunking the Account List Excuse\n* **The Solution:** Letting them build their own lists was the right move. Now, we track if engagement improves on accounts *they* hand-picked.")
+    if projects_data:
+        # Dynamically pulls the project titles from your Google Sheet
+        project = st.selectbox("Select Project:", list(projects_data.keys()))
+        st.markdown(projects_data[project])
+    else:
+        st.info("Special Projects data not found. Please check your Google Sheets connection.")

@@ -96,7 +96,29 @@ def load_data():
             
     return pd.DataFrame(data)
 
+# --- HEATMAP MOCK DATA ENGINE ---
+@st.cache_data
+def load_heatmap_data():
+    # I digitized Aiko's data directly from the screenshots to prove the concept works!
+    heatmap_raw = [
+        # Aiko - This Quarter
+        ("Aiko", "This Quarter", "Mon", 1, 10, 2), ("Aiko", "This Quarter", "Mon", 2, 15, 9), ("Aiko", "This Quarter", "Mon", 3, 15, 2), ("Aiko", "This Quarter", "Mon", 4, 25, 2), ("Aiko", "This Quarter", "Mon", 5, 25, 2), ("Aiko", "This Quarter", "Mon", 6, 25, 2), ("Aiko", "This Quarter", "Mon", 7, 20, 2),
+        ("Aiko", "This Quarter", "Tue", 1, 10, 9), ("Aiko", "This Quarter", "Tue", 2, 20, 9), ("Aiko", "This Quarter", "Tue", 3, 5, 2), ("Aiko", "This Quarter", "Tue", 4, 25, 2), ("Aiko", "This Quarter", "Tue", 5, 30, 2), ("Aiko", "This Quarter", "Tue", 6, 25, 2), ("Aiko", "This Quarter", "Tue", 7, 10, 2), ("Aiko", "This Quarter", "Tue", 8, 5, 2),
+        ("Aiko", "This Quarter", "Wed", 1, 5, 2), ("Aiko", "This Quarter", "Wed", 2, 10, 2), ("Aiko", "This Quarter", "Wed", 3, 15, 5), ("Aiko", "This Quarter", "Wed", 4, 20, 2), ("Aiko", "This Quarter", "Wed", 5, 30, 2), ("Aiko", "This Quarter", "Wed", 6, 25, 2), ("Aiko", "This Quarter", "Wed", 7, 15, 2), ("Aiko", "This Quarter", "Wed", 8, 10, 9), ("Aiko", "This Quarter", "Wed", 9, 10, 2),
+        ("Aiko", "This Quarter", "Thu", 1, 10, 9), ("Aiko", "This Quarter", "Thu", 2, 10, 2), ("Aiko", "This Quarter", "Thu", 3, 10, 2), ("Aiko", "This Quarter", "Thu", 4, 20, 2), ("Aiko", "This Quarter", "Thu", 5, 25, 2), ("Aiko", "This Quarter", "Thu", 6, 30, 2), ("Aiko", "This Quarter", "Thu", 7, 15, 2),
+        ("Aiko", "This Quarter", "Fri", 3, 15, 2), ("Aiko", "This Quarter", "Fri", 4, 20, 2), ("Aiko", "This Quarter", "Fri", 5, 35, 2), ("Aiko", "This Quarter", "Fri", 6, 25, 2), ("Aiko", "This Quarter", "Fri", 7, 15, 2), ("Aiko", "This Quarter", "Fri", 8, 10, 2),
+
+        # Aiko - Last Week
+        ("Aiko", "Last Week", "Mon", 5, 15, 2), ("Aiko", "Last Week", "Mon", 6, 15, 2),
+        ("Aiko", "Last Week", "Tue", 4, 5, 2), ("Aiko", "Last Week", "Tue", 5, 15, 2), ("Aiko", "Last Week", "Tue", 6, 15, 2), ("Aiko", "Last Week", "Tue", 7, 5, 2), ("Aiko", "Last Week", "Tue", 8, 5, 2),
+        ("Aiko", "Last Week", "Wed", 5, 10, 2), ("Aiko", "Last Week", "Wed", 6, 20, 2), ("Aiko", "Last Week", "Wed", 7, 10, 2),
+        ("Aiko", "Last Week", "Thu", 4, 5, 2), ("Aiko", "Last Week", "Thu", 5, 15, 2), ("Aiko", "Last Week", "Thu", 6, 15, 2),
+        ("Aiko", "Last Week", "Fri", 5, 20, 2)
+    ]
+    return pd.DataFrame(heatmap_raw, columns=["SDR", "Timeframe", "Day", "Hour", "Calls", "Connect %"])
+
 df = load_data()
+df_heat = load_heatmap_data()
 
 # --- CONTENT DICTIONARIES ---
 sdr_analytics = {
@@ -248,6 +270,40 @@ elif view == "🔍 Individual Deep Dive":
     with row3_col2:
         st.plotly_chart(px.line(sdr_data, x="Week", y="Reply %", title="Reply % 🦎", markers=True, color_discrete_sequence=[ql_green]), use_container_width=True)
 
+    # --- NEW: HEATMAP VISUALIZATION ---
+    st.markdown("---")
+    st.subheader("⏱️ Optimal Calling Windows (Israel Time)")
+    
+    sdr_heatmap_data = df_heat[df_heat["SDR"] == selected_sdr]
+    
+    if not sdr_heatmap_data.empty:
+        heat_col1, heat_col2 = st.columns(2)
+        
+        # Quarter Heatmap
+        q_data = sdr_heatmap_data[sdr_heatmap_data["Timeframe"] == "This Quarter"]
+        if not q_data.empty:
+            fig_q = px.scatter(
+                q_data, x="Hour", y="Day", size="Calls", color="Connect %", 
+                color_continuous_scale="PuRd", title="This Quarter",
+                category_orders={"Day": ["Fri", "Thu", "Wed", "Tue", "Mon"]} # Reverses Y-Axis so Mon is on top
+            )
+            # Format X-Axis to look like standard times
+            fig_q.update_xaxes(tickvals=list(range(24)), ticktext=[f"{h%12 if h%12!=0 else 12} {'AM' if h<12 else 'PM'}" for h in range(24)], range=[-1, 24])
+            heat_col1.plotly_chart(fig_q, use_container_width=True)
+            
+        # Week Heatmap
+        w_data = sdr_heatmap_data[sdr_heatmap_data["Timeframe"] == "Last Week"]
+        if not w_data.empty:
+            fig_w = px.scatter(
+                w_data, x="Hour", y="Day", size="Calls", color="Connect %", 
+                color_continuous_scale="PuRd", title="Last Week",
+                category_orders={"Day": ["Fri", "Thu", "Wed", "Tue", "Mon"]}
+            )
+            fig_w.update_xaxes(tickvals=list(range(24)), ticktext=[f"{h%12 if h%12!=0 else 12} {'AM' if h<12 else 'PM'}" for h in range(24)], range=[-1, 24])
+            heat_col2.plotly_chart(fig_w, use_container_width=True)
+    else:
+        st.info("No time-mapping data available for this SDR yet. Please upload heatmap data to activate this view.")
+
 # --- VIEW 3: 1:1 COACHING ADVICE ---
 elif view == "🗣️ 1:1 Coaching Advice":
     st.header("1:1 Coaching Agendas")
@@ -260,6 +316,7 @@ elif view == "🚀 Special Projects":
     st.header("Strategic Initiatives & Focus Areas")
     project = st.selectbox("Select Project:", [
         "Issues to fix",
+        "The iPhone Screener Bypass Playbook",
         "Preparing Max (New US SDR)", 
         "The 'Ben Effect' (Leadership)", 
         "The US 'Bad Lists' Excuse"
@@ -288,6 +345,27 @@ elif view == "🚀 Special Projects":
         Ben is completely carrying the team.
         * **The Risk:** With 44 all-time meetings, he has booked nearly double the next highest rep (Jessica, with 23). If Ben takes a two-week vacation, or if his "creme de la creme" account list runs dry, the entire team's target is in serious jeopardy.
         * **The Fix:** You desperately need to clone Ben's Nooks/Dialer framework and force the bottom half of the leaderboard to adopt it.
+        """)
+    elif project == "The iPhone Screener Bypass Playbook":
+        st.markdown("""
+        ### 📱 Bypassing the iOS 17 Call Screeners
+        With recent iOS updates, Apple introduced two massive hurdles for outbound sales: **"Silence Unknown Callers"** and **"Live Voicemail"**. Here is the playbook to bypass them:
+
+        **1. The "Live Voicemail" Hack (Optimize for the Transcript)**
+        Because iOS 17 users see a live text transcript of your voicemail on their screen in real-time, they use it to decide if they should pick up the call mid-ring.
+        * **The Fix:** The split second the voicemail records, drop a hyper-relevant hook. *"Hey John, looking at your Q2 pricing strategy and noticed..."* -> The prospect reads their name and a relevant business problem on their screen and presses the green "Accept Call" button.
+
+        **2. The Siri Signature Trick**
+        Apple's "Silence Unknown Callers" blocks numbers it doesn't recognize. However, Siri actually scans a user's Apple Mail app for phone numbers.
+        * **The Fix:** Ensure the exact phone number the SDR is dialing from (their Nooks/outbound number) is in their email signature. If they email on Tuesday and call on Thursday, Siri will often bypass the blocker and display **"Maybe: [SDR Name]"** on caller ID instead of "Unknown."
+
+        **3. The "Double Dial" (Use Wisely)**
+        Most iPhones have a default "Do Not Disturb" setting called "Repeated Calls." If the same number calls back within 3 minutes, the iPhone pushes the second call through loud and clear.
+        * **The Fix:** Double-dial absolute top-tier prospects. Call once, let it go to voicemail (don't leave one), hang up, and immediately call right back. *(Note: Only do this for highly researched, Tier 1 accounts).*
+
+        **4. The "Pre-Call Bump"**
+        Combine channels to warm up the number.
+        * **The Fix:** Send a LinkedIn voice note or an email 10 minutes before a call block: *"Hey Sarah, going to give you a quick ring from a +61 number in a few minutes regarding [X]. Feel free to screen me if you're busy!"* It disarms the prospect and makes them look at their phone when the unknown number pops up.
         """)
     elif project == "Preparing Max (New US SDR)":
         st.markdown("""

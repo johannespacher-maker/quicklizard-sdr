@@ -13,7 +13,7 @@ ql_green = "#27ae60"
 @st.cache_data(ttl=600) # This tells the app to fetch fresh data every 10 minutes
 def load_data():
     # Replace the text inside the quotes with your copied link!
-    sheet_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRPoua2HZBuFO4OqvrxjB7MOk5B9Sy_nHJKOvMckok97mAKZKFB2nteZPPRv56opZD2i0JpGuJhsQsl/pubhtml?gid=0&single=true"
+    sheet_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRPoua2HZBuFO4OqvrxjB7MOk5B9Sy_nHJKOvMckok97mAKZKFB2nteZPPRv56opZD2i0JpGuJhsQsl/pub?gid=0&single=true&output=csv"
     return pd.read_csv(sheet_url)
 
 df = load_data()

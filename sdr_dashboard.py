@@ -99,7 +99,6 @@ def load_data():
 # --- HEATMAP MOCK DATA ENGINE ---
 @st.cache_data
 def load_heatmap_data():
-    # I digitized Aiko's data directly from the screenshots to prove the concept works!
     heatmap_raw = [
         # Aiko - This Quarter
         ("Aiko", "This Quarter", "Mon", 1, 10, 2), ("Aiko", "This Quarter", "Mon", 2, 15, 9), ("Aiko", "This Quarter", "Mon", 3, 15, 2), ("Aiko", "This Quarter", "Mon", 4, 25, 2), ("Aiko", "This Quarter", "Mon", 5, 25, 2), ("Aiko", "This Quarter", "Mon", 6, 25, 2), ("Aiko", "This Quarter", "Mon", 7, 20, 2),
@@ -119,6 +118,22 @@ def load_heatmap_data():
 
 df = load_data()
 df_heat = load_heatmap_data()
+
+# --- TIMEZONE SHIFT ENGINE ---
+def shift_timezone(row, offset):
+    days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    day_idx = days.index(row["Day"])
+    hour = row["Hour"]
+    
+    new_hour = hour + offset
+    if new_hour < 0:
+        new_hour += 24
+        day_idx = (day_idx - 1) % 7
+    elif new_hour >= 24:
+        new_hour -= 24
+        day_idx = (day_idx + 1) % 7
+        
+    return pd.Series([days[day_idx], new_hour])
 
 # --- CONTENT DICTIONARIES ---
 sdr_analytics = {
@@ -270,24 +285,46 @@ elif view == "🔍 Individual Deep Dive":
     with row3_col2:
         st.plotly_chart(px.line(sdr_data, x="Week", y="Reply %", title="Reply % 🦎", markers=True, color_discrete_sequence=[ql_green]), use_container_width=True)
 
-    # --- NEW: HEATMAP VISUALIZATION ---
+    # --- HEATMAP VISUALIZATION ---
     st.markdown("---")
-    st.subheader("⏱️ Optimal Calling Windows (Israel Time)")
+    st.subheader("⏱️ Optimal Calling Windows")
     
-    sdr_heatmap_data = df_heat[df_heat["SDR"] == selected_sdr]
+    sdr_heatmap_data = df_heat[df_heat["SDR"] == selected_sdr].copy()
     
     if not sdr_heatmap_data.empty:
+        # Timezone Selector
+        tz_col, _ = st.columns([1, 2])
+        with tz_col:
+            timezones = {
+                "Israel Time (IST) - Default": 0,
+                "Central Europe (CET)": -1,
+                "UK Time (GMT)": -2,
+                "US Eastern Time (EST)": -7,
+                "US Pacific Time (PST)": -10,
+                "Singapore Time (SGT)": 6,
+                "Australian Eastern (AEST)": 8
+            }
+            selected_tz = st.selectbox("Select Timezone:", list(timezones.keys()))
+            tz_offset = timezones[selected_tz]
+
+        # Apply the timezone shift if they changed it
+        if tz_offset != 0:
+            sdr_heatmap_data[["Day", "Hour"]] = sdr_heatmap_data.apply(lambda r: shift_timezone(r, tz_offset), axis=1)
+
         heat_col1, heat_col2 = st.columns(2)
+        
+        # Custom Quicklizard Green color palette (no blank/white dots!)
+        ql_greens = ["#a1d9b3", "#27ae60", "#0b4a24"] 
+        all_days = ["Sun", "Sat", "Fri", "Thu", "Wed", "Tue", "Mon"] # Ensures Y-axis stays static even if days shift
         
         # Quarter Heatmap
         q_data = sdr_heatmap_data[sdr_heatmap_data["Timeframe"] == "This Quarter"]
         if not q_data.empty:
             fig_q = px.scatter(
                 q_data, x="Hour", y="Day", size="Calls", color="Connect %", 
-                color_continuous_scale="PuRd", title="This Quarter",
-                category_orders={"Day": ["Fri", "Thu", "Wed", "Tue", "Mon"]} # Reverses Y-Axis so Mon is on top
+                color_continuous_scale=ql_greens, title=f"This Quarter ({selected_tz.split(' ')[0]})",
+                category_orders={"Day": all_days}
             )
-            # Format X-Axis to look like standard times
             fig_q.update_xaxes(tickvals=list(range(24)), ticktext=[f"{h%12 if h%12!=0 else 12} {'AM' if h<12 else 'PM'}" for h in range(24)], range=[-1, 24])
             heat_col1.plotly_chart(fig_q, use_container_width=True)
             
@@ -296,8 +333,8 @@ elif view == "🔍 Individual Deep Dive":
         if not w_data.empty:
             fig_w = px.scatter(
                 w_data, x="Hour", y="Day", size="Calls", color="Connect %", 
-                color_continuous_scale="PuRd", title="Last Week",
-                category_orders={"Day": ["Fri", "Thu", "Wed", "Tue", "Mon"]}
+                color_continuous_scale=ql_greens, title=f"Last Week ({selected_tz.split(' ')[0]})",
+                category_orders={"Day": all_days}
             )
             fig_w.update_xaxes(tickvals=list(range(24)), ticktext=[f"{h%12 if h%12!=0 else 12} {'AM' if h<12 else 'PM'}" for h in range(24)], range=[-1, 24])
             heat_col2.plotly_chart(fig_w, use_container_width=True)

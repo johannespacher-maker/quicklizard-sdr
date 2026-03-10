@@ -13,7 +13,7 @@ ql_green = "#27ae60"
 @st.cache_data(ttl=600) # This tells the app to fetch fresh data every 10 minutes
 def load_data():
     # Replace the text inside the quotes with your copied link!
-    sheet_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRPoua2HZBuFO4OqvrxjB7MOk5B9Sy_nHJKOvMckok97mAKZKFB2nteZPPRv56opZD2i0JpGuJhsQsl/pub?output=csv"
+    sheet_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRPoua2HZBuFO4OqvrxjB7MOk5B9Sy_nHJKOvMckok97mAKZKFB2nteZPPRv56opZD2i0JpGuJhsQsl/pubhtml?gid=0&single=true"
     return pd.read_csv(sheet_url)
 
 df = load_data()
@@ -91,21 +91,28 @@ def shift_timezone(row, offset):
         
     return pd.Series([days[day_idx], new_hour])
 
-# --- CONTENT DICTIONARIES ---
-sdr_analytics = {
-    "Ben": "**The Situation:** Ben ran out of runway on emails due to his D2C TAM limits, but brilliantly pivoted to Nooks to aggressively call his best prospects.\n\n**Timing Insight:** Dominates the EU/UK hours (6 AM to 3 PM IST). His extreme volume during peak business hours yields incredible connects.\n\n**Action Item:** Ensure he has enough fresh, verified data so he doesn't burn his list too quickly.",
-    "Feddy": "**The Situation:** Battling the US market with Nooks. High activity, but very low connect rates.\n\n**Timing Insight:** Calling the US heavily from 2 PM to 10 PM IST. Review if these late blocks are yielding quality connects or just voicemails.\n\n**Action Item:** Dissect his Jan Week 3 outbound spike. Help build a consistent, daily cadence.",
-    "Heike": "**The Situation:** Operating with a very limited TAM, she plays the 'sniper.'\n\n**Timing Insight:** Classic DACH hours. Highly effective early mornings (7 AM - 11 AM IST). Keep her focused on these prime windows.\n\n**Action Item:** Do not force mindless volume. Ask her to template her successful hooks and share them.",
-    "Ilana": "**The Situation:** Achieving absurdly high conversion metrics, but volume is critically low.\n\n**Timing Insight:** Historical heatmaps are beautiful (8 AM - 4 PM), but 'Last Week' is practically empty. She has stopped dialing.\n\n**Action Item:** Enforce a daily 8 AM - 4 PM block consistency to get her volume up. If she doubles volume, she is the top rep.",
-    "Jessica": "**The Situation:** True discipline. Maintained a multi-channel approach despite territory cuts.\n\n**Timing Insight:** Incredibly consistent. Dials solidly between 8 AM and 5 PM IST every single day without fail.\n\n**Action Item:** Facilitate a strategy session with Heike to adapt DACH hooks for B2C.",
-    "Laura": "**The Situation:** Slogged through the US market. High activity, but email reply rate is 0%.\n\n**Timing Insight:** Calling heavily in the US blocks. 'This Quarter' shows dense activity Mon/Fri, while 'Last Week' maps perfectly to afternoon/late evening (4 PM - 11 PM IST). Needs strict, repeatable power hours.\n\n**Action Item:** Rewrite US sequences. Use Nooks to lower dialing barrier.",
-    "Lea": "**The Situation:** A true 'Steady Eddy.' Books 1-2 meetings almost every week.\n\n**Timing Insight:** Very steady UK/Nordics calling rhythm between 9 AM and 6 PM IST.\n\n**Action Item:** Find out what caused her activity volume to dip into the 100-300 range compared to her 500+ baseline.",
-    "Rozanne": "**The Situation:** Capable of high volume, but has a serious red flag: 4 weeks of 0 calls.\n\n**Timing Insight:** US market. Heavily skewed to late evening IST (4 PM - 11 PM), with some midnight spikes.\n\n**Action Item:** Address the 0-call months. Mandate Nooks to ensure she hits a minimum weekly threshold.",
-    "Aiko": "**The Situation:** Steady, low-risk upside in non-core markets.\n\n**Timing Insight:** Connects best Tuesday 1-2 AM and Wednesday 8 AM (IST). Focus her efforts on these highly specific windows.\n\n**Action Item:** Decouple connect rates from review until bad data is fixed. Implement iOS Screener Playbook.",
-    "Max": "**The Situation:** The newest US SDR, just ramping up. Logged 560 activities in Week 1.\n\n**Timing Insight:** Calling heavily between 2 PM and 9 PM IST. Excellent baseline schedule for the US market.\n\n**Action Item:** Start on Nooks Day 1. Email is a supplement, phone is the primary weapon."
-}
+# --- GOOGLE SHEETS COACHING & ANALYTICS ENGINE ---
+@st.cache_data(ttl=600)
+def load_coaching_data():
+    # Replace the text inside the quotes with your NEW Coaching tab CSV link!
+    sheet_url_coaching = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRPoua2HZBuFO4OqvrxjB7MOk5B9Sy_nHJKOvMckok97mAKZKFB2nteZPPRv56opZD2i0JpGuJhsQsl/pubhtml?gid=1177538336&single=true"
+    df_coach = pd.read_csv(sheet_url_coaching)
+    
+    analytics_dict = {}
+    plans_dict = {}
+    
+    # This stitches your spreadsheet columns into nicely formatted dashboard text!
+    for index, row in df_coach.iterrows():
+        sdr_name = row['SDR']
+        analytics_text = f"**The Situation:** {row['Situation']}\n\n**Strengths:** {row['Strengths']}\n\n**Action Item:** {row['Action Item']}"
+        
+        analytics_dict[sdr_name] = analytics_text
+        plans_dict[sdr_name] = str(row['Coaching Plan'])
+        
+    return analytics_dict, plans_dict
 
-coaching_plans = {k: "Discuss timing strategies based on the heatmaps below to optimize connect rates and ensure schedule alignment." for k in sdr_analytics.keys()}
+# Load the data and create the dictionaries the dashboard expects
+sdr_analytics, coaching_plans = load_coaching_data()
 
 # --- SIDEBAR NAVIGATION ---
 st.sidebar.title("🦎 Quicklizard Menu")

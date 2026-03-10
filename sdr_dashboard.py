@@ -95,7 +95,7 @@ def shift_timezone(row, offset):
 @st.cache_data(ttl=600)
 def load_coaching_data():
     # Replace the text inside the quotes with your NEW Coaching tab CSV link!
-    sheet_url_coaching = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRPoua2HZBuFO4OqvrxjB7MOk5B9Sy_nHJKOvMckok97mAKZKFB2nteZPPRv56opZD2i0JpGuJhsQsl/pubhtml?gid=1177538336&single=true"
+    sheet_url_coaching = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRPoua2HZBuFO4OqvrxjB7MOk5B9Sy_nHJKOvMckok97mAKZKFB2nteZPPRv56opZD2i0JpGuJhsQsl/pub?gid=1177538336&single=true&output=csv"
     df_coach = pd.read_csv(sheet_url_coaching)
     
     analytics_dict = {}

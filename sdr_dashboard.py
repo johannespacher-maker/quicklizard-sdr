@@ -118,7 +118,7 @@ sdr_analytics, coaching_plans = load_coaching_data()
 @st.cache_data(ttl=600)
 def load_projects_data():
     # Replace with your NEW Special Projects tab CSV link!
-    sheet_url_projects = "PASTE_YOUR_PROJECTS_CSV_LINK_HERE"
+    sheet_url_projects = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRPoua2HZBuFO4OqvrxjB7MOk5B9Sy_nHJKOvMckok97mAKZKFB2nteZPPRv56opZD2i0JpGuJhsQsl/pub?gid=1790930146&single=true&output=csv"
     df_proj = pd.read_csv(sheet_url_projects)
     
     projects_dict = {}

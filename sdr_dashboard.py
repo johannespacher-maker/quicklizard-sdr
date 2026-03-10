@@ -99,21 +99,120 @@ def load_data():
 # --- HEATMAP MOCK DATA ENGINE ---
 @st.cache_data
 def load_heatmap_data():
-    heatmap_raw = [
-        # Aiko - This Quarter
-        ("Aiko", "This Quarter", "Mon", 1, 10, 2), ("Aiko", "This Quarter", "Mon", 2, 15, 9), ("Aiko", "This Quarter", "Mon", 3, 15, 2), ("Aiko", "This Quarter", "Mon", 4, 25, 2), ("Aiko", "This Quarter", "Mon", 5, 25, 2), ("Aiko", "This Quarter", "Mon", 6, 25, 2), ("Aiko", "This Quarter", "Mon", 7, 20, 2),
-        ("Aiko", "This Quarter", "Tue", 1, 10, 9), ("Aiko", "This Quarter", "Tue", 2, 20, 9), ("Aiko", "This Quarter", "Tue", 3, 5, 2), ("Aiko", "This Quarter", "Tue", 4, 25, 2), ("Aiko", "This Quarter", "Tue", 5, 30, 2), ("Aiko", "This Quarter", "Tue", 6, 25, 2), ("Aiko", "This Quarter", "Tue", 7, 10, 2), ("Aiko", "This Quarter", "Tue", 8, 5, 2),
-        ("Aiko", "This Quarter", "Wed", 1, 5, 2), ("Aiko", "This Quarter", "Wed", 2, 10, 2), ("Aiko", "This Quarter", "Wed", 3, 15, 5), ("Aiko", "This Quarter", "Wed", 4, 20, 2), ("Aiko", "This Quarter", "Wed", 5, 30, 2), ("Aiko", "This Quarter", "Wed", 6, 25, 2), ("Aiko", "This Quarter", "Wed", 7, 15, 2), ("Aiko", "This Quarter", "Wed", 8, 10, 9), ("Aiko", "This Quarter", "Wed", 9, 10, 2),
-        ("Aiko", "This Quarter", "Thu", 1, 10, 9), ("Aiko", "This Quarter", "Thu", 2, 10, 2), ("Aiko", "This Quarter", "Thu", 3, 10, 2), ("Aiko", "This Quarter", "Thu", 4, 20, 2), ("Aiko", "This Quarter", "Thu", 5, 25, 2), ("Aiko", "This Quarter", "Thu", 6, 30, 2), ("Aiko", "This Quarter", "Thu", 7, 15, 2),
-        ("Aiko", "This Quarter", "Fri", 3, 15, 2), ("Aiko", "This Quarter", "Fri", 4, 20, 2), ("Aiko", "This Quarter", "Fri", 5, 35, 2), ("Aiko", "This Quarter", "Fri", 6, 25, 2), ("Aiko", "This Quarter", "Fri", 7, 15, 2), ("Aiko", "This Quarter", "Fri", 8, 10, 2),
+    heatmap_raw = []
+    
+    def generate_blocks(sdr, timeframe, day, start_h, end_h, size, conn):
+        for h in range(start_h, end_h + 1):
+            heatmap_raw.append((sdr, timeframe, day, h, size, conn))
 
-        # Aiko - Last Week
-        ("Aiko", "Last Week", "Mon", 5, 15, 2), ("Aiko", "Last Week", "Mon", 6, 15, 2),
-        ("Aiko", "Last Week", "Tue", 4, 5, 2), ("Aiko", "Last Week", "Tue", 5, 15, 2), ("Aiko", "Last Week", "Tue", 6, 15, 2), ("Aiko", "Last Week", "Tue", 7, 5, 2), ("Aiko", "Last Week", "Tue", 8, 5, 2),
-        ("Aiko", "Last Week", "Wed", 5, 10, 2), ("Aiko", "Last Week", "Wed", 6, 20, 2), ("Aiko", "Last Week", "Wed", 7, 10, 2),
-        ("Aiko", "Last Week", "Thu", 4, 5, 2), ("Aiko", "Last Week", "Thu", 5, 15, 2), ("Aiko", "Last Week", "Thu", 6, 15, 2),
-        ("Aiko", "Last Week", "Fri", 5, 20, 2)
-    ]
+    # Aiko 
+    generate_blocks("Aiko", "This Quarter", "Mon", 1, 7, 15, 2)
+    generate_blocks("Aiko", "This Quarter", "Tue", 1, 8, 15, 5)
+    generate_blocks("Aiko", "This Quarter", "Wed", 1, 9, 15, 2)
+    generate_blocks("Aiko", "This Quarter", "Thu", 1, 7, 15, 3)
+    generate_blocks("Aiko", "This Quarter", "Fri", 3, 8, 20, 2)
+    generate_blocks("Aiko", "Last Week", "Mon", 5, 6, 15, 2)
+    generate_blocks("Aiko", "Last Week", "Tue", 4, 8, 10, 2)
+    generate_blocks("Aiko", "Last Week", "Wed", 5, 7, 15, 2)
+    generate_blocks("Aiko", "Last Week", "Thu", 4, 6, 10, 2)
+    generate_blocks("Aiko", "Last Week", "Fri", 5, 5, 25, 2)
+
+    # Ben 
+    generate_blocks("Ben", "This Quarter", "Mon", 6, 17, 30, 8)
+    generate_blocks("Ben", "This Quarter", "Tue", 5, 15, 25, 6)
+    generate_blocks("Ben", "This Quarter", "Wed", 5, 17, 30, 7)
+    generate_blocks("Ben", "This Quarter", "Thu", 8, 15, 25, 6)
+    generate_blocks("Ben", "This Quarter", "Fri", 6, 15, 20, 5)
+    generate_blocks("Ben", "Last Week", "Mon", 8, 8, 20, 4)
+    generate_blocks("Ben", "Last Week", "Tue", 12, 12, 5, 8)
+    generate_blocks("Ben", "Last Week", "Tue", 15, 15, 30, 4)
+    generate_blocks("Ben", "Last Week", "Wed", 7, 7, 25, 3)
+    generate_blocks("Ben", "Last Week", "Wed", 14, 14, 5, 2)
+    generate_blocks("Ben", "Last Week", "Fri", 10, 11, 25, 4)
+
+    # Feddy 
+    generate_blocks("Feddy", "This Quarter", "Mon", 14, 21, 20, 3)
+    generate_blocks("Feddy", "This Quarter", "Tue", 14, 21, 25, 2)
+    generate_blocks("Feddy", "This Quarter", "Wed", 19, 22, 20, 4)
+    generate_blocks("Feddy", "This Quarter", "Thu", 14, 23, 20, 3)
+    generate_blocks("Feddy", "Last Week", "Mon", 19, 19, 25, 3)
+    generate_blocks("Feddy", "Last Week", "Tue", 21, 21, 20, 3)
+    generate_blocks("Feddy", "Last Week", "Wed", 20, 20, 25, 3)
+    generate_blocks("Feddy", "Last Week", "Thu", 23, 23, 20, 3)
+
+    # Heike 
+    generate_blocks("Heike", "This Quarter", "Mon", 8, 16, 20, 5)
+    generate_blocks("Heike", "This Quarter", "Tue", 8, 15, 25, 6)
+    generate_blocks("Heike", "This Quarter", "Wed", 8, 16, 25, 6)
+    generate_blocks("Heike", "This Quarter", "Thu", 7, 16, 20, 5)
+    generate_blocks("Heike", "This Quarter", "Fri", 7, 15, 25, 6)
+    generate_blocks("Heike", "Last Week", "Mon", 8, 13, 15, 4)
+    generate_blocks("Heike", "Last Week", "Tue", 9, 9, 25, 6)
+    generate_blocks("Heike", "Last Week", "Wed", 9, 12, 20, 4)
+    generate_blocks("Heike", "Last Week", "Thu", 8, 12, 15, 5)
+    generate_blocks("Heike", "Last Week", "Fri", 8, 13, 30, 3)
+
+    # Ilana 
+    generate_blocks("Ilana", "This Quarter", "Mon", 8, 12, 25, 12)
+    generate_blocks("Ilana", "This Quarter", "Tue", 9, 15, 25, 10)
+    generate_blocks("Ilana", "This Quarter", "Wed", 9, 16, 25, 11)
+    generate_blocks("Ilana", "This Quarter", "Thu", 9, 15, 20, 9)
+    generate_blocks("Ilana", "This Quarter", "Fri", 11, 11, 15, 4)
+    generate_blocks("Ilana", "Last Week", "Wed", 11, 12, 25, 4)
+
+    # Jessica 
+    generate_blocks("Jessica", "This Quarter", "Mon", 10, 17, 25, 7)
+    generate_blocks("Jessica", "This Quarter", "Tue", 9, 15, 30, 6)
+    generate_blocks("Jessica", "This Quarter", "Wed", 9, 17, 25, 7)
+    generate_blocks("Jessica", "This Quarter", "Thu", 10, 15, 25, 6)
+    generate_blocks("Jessica", "This Quarter", "Fri", 8, 15, 20, 6)
+    generate_blocks("Jessica", "Last Week", "Mon", 10, 14, 25, 7)
+    generate_blocks("Jessica", "Last Week", "Tue", 10, 13, 30, 4)
+    generate_blocks("Jessica", "Last Week", "Wed", 10, 10, 25, 8)
+    generate_blocks("Jessica", "Last Week", "Thu", 13, 14, 30, 9)
+    generate_blocks("Jessica", "Last Week", "Fri", 11, 14, 20, 4)
+
+    # Laura 
+    generate_blocks("Laura", "This Quarter", "Mon", 17, 18, 15, 2)
+    generate_blocks("Laura", "This Quarter", "Tue", 0, 0, 15, 2)
+    generate_blocks("Laura", "This Quarter", "Wed", 14, 14, 10, 2)
+    generate_blocks("Laura", "This Quarter", "Thu", 14, 16, 15, 3)
+    generate_blocks("Laura", "This Quarter", "Fri", 17, 23, 20, 4)
+    generate_blocks("Laura", "This Quarter", "Sat", 0, 0, 10, 2)
+    generate_blocks("Laura", "Last Week", "Tue", 19, 20, 25, 4)
+    generate_blocks("Laura", "Last Week", "Thu", 16, 21, 20, 5)
+    generate_blocks("Laura", "Last Week", "Fri", 19, 19, 15, 3)
+
+    # Lea 
+    generate_blocks("Lea", "This Quarter", "Mon", 9, 17, 25, 8)
+    generate_blocks("Lea", "This Quarter", "Tue", 9, 17, 25, 7)
+    generate_blocks("Lea", "This Quarter", "Wed", 9, 17, 20, 7)
+    generate_blocks("Lea", "This Quarter", "Thu", 10, 18, 20, 6)
+    generate_blocks("Lea", "This Quarter", "Fri", 11, 16, 15, 5)
+    generate_blocks("Lea", "Last Week", "Mon", 10, 17, 20, 4)
+    generate_blocks("Lea", "Last Week", "Tue", 11, 11, 15, 3)
+    generate_blocks("Lea", "Last Week", "Wed", 12, 17, 15, 5)
+    generate_blocks("Lea", "Last Week", "Thu", 11, 16, 30, 6)
+    generate_blocks("Lea", "Last Week", "Fri", 11, 11, 20, 4)
+
+    # Max (First week, identical QTR/Week data)
+    for timeframe in ["This Quarter", "Last Week"]:
+        generate_blocks("Max", timeframe, "Tue", 19, 19, 25, 3)
+        generate_blocks("Max", timeframe, "Wed", 14, 21, 15, 3)
+        generate_blocks("Max", timeframe, "Thu", 19, 19, 30, 3)
+        generate_blocks("Max", timeframe, "Fri", 18, 18, 25, 3)
+
+    # Rozanne 
+    generate_blocks("Rozanne", "This Quarter", "Tue", 16, 18, 25, 5)
+    generate_blocks("Rozanne", "This Quarter", "Tue", 22, 23, 15, 8)
+    generate_blocks("Rozanne", "This Quarter", "Wed", 11, 11, 15, 3)
+    generate_blocks("Rozanne", "This Quarter", "Wed", 16, 23, 20, 6)
+    generate_blocks("Rozanne", "This Quarter", "Thu", 0, 0, 10, 7)
+    generate_blocks("Rozanne", "This Quarter", "Thu", 14, 23, 20, 5)
+    generate_blocks("Rozanne", "Last Week", "Thu", 14, 14, 15, 3)
+    generate_blocks("Rozanne", "Last Week", "Thu", 21, 21, 25, 3)
+    generate_blocks("Rozanne", "Last Week", "Thu", 23, 23, 30, 5)
+
     return pd.DataFrame(heatmap_raw, columns=["SDR", "Timeframe", "Day", "Hour", "Calls", "Connect %"])
 
 df = load_data()
@@ -137,16 +236,16 @@ def shift_timezone(row, offset):
 
 # --- CONTENT DICTIONARIES ---
 sdr_analytics = {
-    "Ben": "**The Situation:** Ben ran out of runway on emails due to his D2C TAM limits, but brilliantly pivoted to Nooks to aggressively call his best prospects. This led to a massive 12.1% connect rate in January.\n\n**Strengths:** Highly adaptable, proven closer (14 meetings in Nov, 14 in Jan).\n\n**Action Item:** Review his Nooks strategy. Ensure he has enough fresh, verified data to sustain his high call volume so he doesn't burn through his 'creme de la creme' list too quickly.",
-    "Feddy": "**The Situation:** Started in Q4. His erratic channel-switching in late Dec/Jan was caused by shifting his focus to booking NRF conference meetings rather than pure outbound. However, he still managed a mysterious and impressive spike of 4 outbound meetings in Jan Week 3.\n\n**Strengths:** Hustle and persistence in a brutal market. He survived a zero-meeting ramp-up to book 6 in January.\n\n**Action Item:** Dissect his Jan Week 3 outbound spike. Find out what messaging he used. Help him build a consistent, daily multi-channel cadence now that the conference disruptions are over and he has a redefined account list.",
-    "Heike": "**The Situation:** Operating with a very limited TAM, she plays the 'sniper.' Her engagement rates are elite (reply rates regularly hitting 10–12%+, connect rates consistently solid).\n\n**Strengths:** World-class personalization and DACH market mastery.\n\n**Action Item:** Do not force her to do mindless volume, as it will ruin her TAM. Instead, ask her to template her most successful hooks and share them with Jessica (who is struggling slightly with volume in DACH B2C).",
-    "Ilana": "**The Situation:** Leveraging native language skills to achieve absurdly high conversion metrics (up to 33.3% connect rates and 17.5% reply rates). Her volume, however, is critically low.\n\n**Strengths:** Elite local engagement. When she touches an account, she converts it.\n\n**Action Item:** Focus 100% on workflow optimization. Sit with her to figure out why a single touchpoint takes her so long. If you can help her double her volume (which would still be relatively low), she will easily become your top meeting booker.",
-    "Jessica": "**The Situation:** She was a volume machine (700+ activities/week) until her territory was reduced to just B2C. Her volume naturally halved, but she remained perfectly consistent in her execution.\n\n**Strengths:** Discipline. She maintained a true multi-channel approach despite the frustrating drop in meetings.\n\n**Action Item:** Validate her consistency. Facilitate a strategy session between her and Heike to see if Heike's high-converting DACH hooks can be adapted for Jessica's B2C accounts to increase her yield.",
-    "Laura": "**The Situation:** Slogged through the US market, attended NRF, took vacation, and is now working with a redefined list. She actively dislikes making calls and defaults to email, but her email reply rate is essentially 0%.\n\n**Strengths:** Willing to put in high overall activity volume (regularly 600–700+ touches/week).\n\n**Action Item:** This is a critical intervention. You must rewrite her US email sequences entirely. Concurrently, use the Nooks parallel dialer to help her overcome her call reluctance. She cannot survive in the US market hiding behind 0% reply rate emails.",
-    "Lea": "**The Situation:** A true 'Steady Eddy.' She books 1-2 meetings almost every single week with excellent connect rates (11-17%+). Her low activity in late Dec was due to targeted outreach, and Oct was vacation.\n\n**Strengths:** Reliability and great phone presence.\n\n**Action Item:** Find out what is causing her total activity volume to dip into the 100-300 range recently compared to her 500+ baseline in November. Have her share her UK/Nordics call openers with the team.",
-    "Rozanne": "**The Situation:** Had a massive 16.7% reply rate on 20 emails due to brilliant NRF conference follow-up. Proved she can use Nooks (304 calls in Dec), but has a serious red flag: 4 weeks of 0 calls despite not being fully on vacation.\n\n**Strengths:** Capable of high volume, excellent at event follow-up.\n\n**Action Item:** Address the 0-call month immediately. Since she already proved Nooks works for her, mandate its use to ensure she hits a minimum weekly call threshold. Pair her with Laura to rewrite their standard US outbound emails.",
-    "Aiko": "**The Situation:** She provides steady, low-risk upside in non-core markets. Under Ben's hybrid leadership, she has successfully grown her call volume from the 80/week range up to 150–180+ calls a week. Her connect rates are low (mostly 0–6%), but this is a known systemic issue with bad data in her regions, not a lack of effort.\n\n**Strengths:** Incredibly consistent, reliable, and highly coachable (proven by her steady volume growth).\n\n**Action Item:** Decouple her connect rates from her performance review until the data issue is fixed. Praise her dialing consistency, and work on standardizing the specific email hooks she used in late February that yielded 3–4.2% reply rates.",
-    "Max": "**The Situation:** The newest US SDR, just ramping up.\n\n**Strengths:** Blank slate, ready to learn.\n\n**Action Item:** Start on Nooks Day 1. Set expectations that 50 dials for 2 conversations is normal. Email is a supplement, phone is the primary weapon."
+    "Ben": "**The Situation:** Ben ran out of runway on emails due to his D2C TAM limits, but brilliantly pivoted to Nooks to aggressively call his best prospects. This led to a massive connect rate.\n\n**Strengths:** Highly adaptable, proven closer, unmatched activity volume.\n\n**Timing Insight:** Dominates the EU/UK hours (6 AM to 3 PM IST). His extreme volume during peak business hours yields incredible connects.\n\n**Action Item:** Ensure he has enough fresh, verified data to sustain his high call volume so he doesn't burn through his 'creme de la creme' list too quickly.",
+    "Feddy": "**The Situation:** Battling the US market with Nooks. High activity, but very low connect rates.\n\n**Strengths:** Hustle and persistence in a brutal market.\n\n**Timing Insight:** Calling the US heavily from 2 PM to 10 PM IST. We need to review if these late evening IST blocks are yielding quality connections or just voicemails.\n\n**Action Item:** Dissect his Jan Week 3 outbound spike. Help him build a consistent, daily multi-channel cadence now that conference disruptions are over.",
+    "Heike": "**The Situation:** Operating with a very limited TAM, she plays the 'sniper.' Her engagement rates are elite.\n\n**Strengths:** World-class personalization and DACH market mastery.\n\n**Timing Insight:** Classic DACH hours. Highly effective early mornings (7 AM - 11 AM IST). Keep her focused on these prime windows.\n\n**Action Item:** Do not force her to do mindless volume, as it will ruin her TAM. Instead, ask her to template her most successful hooks and share them.",
+    "Ilana": "**The Situation:** Achieving absurdly high conversion metrics, but her volume is critically low (often under 50 calls a week).\n\n**Strengths:** Elite local engagement. When she touches an account, she converts it.\n\n**Timing Insight:** Her historical heatmaps are beautiful (8 AM - 4 PM), but her 'Last Week' heatmap is practically empty. She has stopped dialing.\n\n**Action Item:** Focus 100% on workflow optimization. Enforce a daily 8 AM - 4 PM block consistency to get her volume up. If she doubles volume, she is the top rep.",
+    "Jessica": "**The Situation:** She was a volume machine until her territory was reduced to B2C. Volume naturally halved, but she remained consistent.\n\n**Strengths:** True discipline. Maintained a multi-channel approach despite frustrating drops in meetings.\n\n**Timing Insight:** Incredibly consistent. Dials solidly between 8 AM and 5 PM IST every single day without fail.\n\n**Action Item:** Validate her consistency. Facilitate a strategy session with Heike to adapt DACH hooks for B2C.",
+    "Laura": "**The Situation:** Slogged through the US market. Dislikes making calls and defaults to email, but her email reply rate is essentially 0%.\n\n**Strengths:** Willing to put in high overall activity volume (600+ touches/week).\n\n**Timing Insight:** Her dialing times are erratic (some midnight calls, scattered late afternoons). She needs structured US blocks rather than dialing sporadically when she feels like it.\n\n**Action Item:** Rewrite her US email sequences entirely. Use Nooks to lower the mental barrier of dialing and enforce strict 6 PM - 10 PM IST power hours.",
+    "Lea": "**The Situation:** A true 'Steady Eddy.' Books 1-2 meetings almost every week with excellent connect rates.\n\n**Strengths:** Reliability and great phone presence.\n\n**Timing Insight:** Very steady UK/Nordics calling rhythm between 9 AM and 6 PM IST. \n\n**Action Item:** Find out what caused her total activity volume to dip into the 100-300 range recently compared to her 500+ baseline in November.",
+    "Rozanne": "**The Situation:** Proved she can use Nooks (300+ calls in Dec), but has a serious red flag: 4 historical weeks of 0 calls.\n\n**Strengths:** Capable of high volume, excellent at event follow-up.\n\n**Timing Insight:** US market. Heavily skewed to late evening IST (4 PM - 11 PM), with some odd midnight spikes. Needs structure to prevent burnout and channel abandoning.\n\n**Action Item:** Address the 0-call months. Mandate Nooks to ensure she hits a minimum weekly call threshold and keep her within reasonable US timezone blocks.",
+    "Aiko": "**The Situation:** Provides steady, low-risk upside in non-core markets. Successfully growing call volume under hybrid leadership.\n\n**Strengths:** Incredibly consistent, reliable, and highly coachable.\n\n**Timing Insight:** Connects best Tuesday 1-2 AM and Wednesday 8 AM (IST). Focus her efforts on these highly specific, converting windows.\n\n**Action Item:** Decouple her connect rates from her review until the bad data issue in her region is fixed. Implement the iOS Screener Playbook.",
+    "Max": "**The Situation:** The newest US SDR, just ramping up.\n\n**Strengths:** Blank slate, ready to learn. Logged 560 activities in his first week.\n\n**Timing Insight:** Calling heavily between 2 PM and 9 PM IST. Excellent baseline schedule for the US market.\n\n**Action Item:** Start on Nooks Day 1. Set expectations that 50 dials for 2 conversations is normal. Email is a supplement, phone is the primary weapon."
 }
 
 coaching_plans = {
@@ -313,9 +412,9 @@ elif view == "🔍 Individual Deep Dive":
 
         heat_col1, heat_col2 = st.columns(2)
         
-        # Custom Quicklizard Green color palette (no blank/white dots!)
+        # Custom Quicklizard Green color palette
         ql_greens = ["#a1d9b3", "#27ae60", "#0b4a24"] 
-        all_days = ["Sun", "Sat", "Fri", "Thu", "Wed", "Tue", "Mon"] # Ensures Y-axis stays static even if days shift
+        all_days = ["Sun", "Sat", "Fri", "Thu", "Wed", "Tue", "Mon"] 
         
         # Quarter Heatmap
         q_data = sdr_heatmap_data[sdr_heatmap_data["Timeframe"] == "This Quarter"]
@@ -339,7 +438,7 @@ elif view == "🔍 Individual Deep Dive":
             fig_w.update_xaxes(tickvals=list(range(24)), ticktext=[f"{h%12 if h%12!=0 else 12} {'AM' if h<12 else 'PM'}" for h in range(24)], range=[-1, 24])
             heat_col2.plotly_chart(fig_w, use_container_width=True)
     else:
-        st.info("No time-mapping data available for this SDR yet. Please upload heatmap data to activate this view.")
+        st.info("No time-mapping data available for this SDR yet.")
 
 # --- VIEW 3: 1:1 COACHING ADVICE ---
 elif view == "🗣️ 1:1 Coaching Advice":

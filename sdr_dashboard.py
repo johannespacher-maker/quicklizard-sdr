@@ -213,7 +213,14 @@ elif view == "🔍 Individual Deep Dive":
 # --- VIEW 3: 1:1 COACHING ADVICE ---
 elif view == "🗣️ 1:1 Coaching Advice":
     st.header("1:1 Coaching Agendas")
-    st.write("Review the individual Deep Dive tabs to go over exact timing strategies with each rep.")
+    
+    # This pulls the dropdown options directly from your new Google Sheet!
+    if coaching_plans:
+        selected_sdr_coach = st.selectbox("Select SDR for 1:1 Prep:", list(coaching_plans.keys()))
+        st.subheader(f"Action Plan for {selected_sdr_coach}")
+        st.write(coaching_plans[selected_sdr_coach])
+    else:
+        st.info("Coaching data not found. Please check your Google Sheets connection.")
 
 # --- VIEW 4: SPECIAL PROJECTS ---
 elif view == "🚀 Special Projects":

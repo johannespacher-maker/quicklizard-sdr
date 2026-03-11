@@ -243,7 +243,7 @@ elif view == "🔍 Individual Deep Dive":
 
         heat_col1, heat_col2 = st.columns(2)
         
-      q_data = sdr_heatmap_data[sdr_heatmap_data["Timeframe"] == "This Quarter"]
+        q_data = sdr_heatmap_data[sdr_heatmap_data["Timeframe"] == "This Quarter"]
         if not q_data.empty:
             fig_q = px.scatter(
                 q_data, x="Hour", y="Day", size="Calls", color="Connect Tier", 

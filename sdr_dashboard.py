@@ -18,61 +18,68 @@ def load_data():
 
 df = load_data()
 
-# --- EXACT SOURCED HEATMAP DATA ---
-@st.cache_data
+# --- GOOGLE SHEETS HEATMAP ENGINE ---
+@st.cache_data(ttl=600)
 def load_heatmap_data():
-    heatmap_raw = []
+    # Replace with your NEW Heatmap tab CSV link!
+    sheet_url_heatmap = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRPoua2HZBuFO4OqvrxjB7MOk5B9Sy_nHJKOvMckok97mAKZKFB2nteZPPRv56opZD2i0JpGuJhsQsl/pub?gid=1688694640&single=true&output=csv"
+    df_raw = pd.read_csv(sheet_url_heatmap)
     
-    # Compact format to save space: (SDR, Timeframe, Day, [List of Hours], calls, connect_rate)
-    hm_input = [
-        # Aiko
-        ("Aiko", "This Quarter", "Mon", list(range(1,8)), 15, 2), ("Aiko", "This Quarter", "Tue", list(range(1,9)), 15, 5), ("Aiko", "This Quarter", "Wed", list(range(1,10)), 15, 2), ("Aiko", "This Quarter", "Thu", list(range(1,8)), 15, 3), ("Aiko", "This Quarter", "Fri", list(range(3,9)), 20, 2),
-        ("Aiko", "Last Week", "Mon", [5,6], 15, 2), ("Aiko", "Last Week", "Tue", list(range(4,9)), 10, 2), ("Aiko", "Last Week", "Wed", [5,6,7], 15, 2), ("Aiko", "Last Week", "Thu", [4,5,6], 10, 2), ("Aiko", "Last Week", "Fri", [5], 25, 2),
-        
-        # Ben
-        ("Ben", "This Quarter", "Mon", list(range(6,18)), 25, 8), ("Ben", "This Quarter", "Tue", list(range(5,16)), 25, 6), ("Ben", "This Quarter", "Wed", list(range(5,18)), 25, 7), ("Ben", "This Quarter", "Thu", list(range(8,16)), 25, 6), ("Ben", "This Quarter", "Fri", list(range(6,16)), 20, 5),
-        ("Ben", "Last Week", "Mon", [8], 20, 4), ("Ben", "Last Week", "Tue", [12, 15], 25, 6), ("Ben", "Last Week", "Wed", [7, 14], 20, 3), ("Ben", "Last Week", "Fri", [10, 11], 25, 4),
-        
-        # Feddy
-        ("Feddy", "This Quarter", "Mon", list(range(14,22)), 20, 3), ("Feddy", "This Quarter", "Tue", list(range(14,22)), 25, 2), ("Feddy", "This Quarter", "Wed", list(range(14,23)), 20, 4), ("Feddy", "This Quarter", "Thu", list(range(14,24)), 20, 3),
-        ("Feddy", "Last Week", "Mon", [19], 25, 3), ("Feddy", "Last Week", "Tue", [21], 20, 3), ("Feddy", "Last Week", "Wed", [20], 25, 3), ("Feddy", "Last Week", "Thu", [23], 20, 3),
-        
-        # Heike
-        ("Heike", "This Quarter", "Mon", list(range(7,18)), 20, 5), ("Heike", "This Quarter", "Tue", list(range(8,17)), 25, 6), ("Heike", "This Quarter", "Wed", list(range(8,17)), 25, 6), ("Heike", "This Quarter", "Thu", list(range(7,17)), 20, 5), ("Heike", "This Quarter", "Fri", list(range(7,16)), 25, 6),
-        ("Heike", "Last Week", "Mon", [8,9,10,12,14], 15, 4), ("Heike", "Last Week", "Tue", [9,15,16], 25, 6), ("Heike", "Last Week", "Wed", [9,10,11,12], 20, 4), ("Heike", "Last Week", "Thu", [8,10,11,12], 15, 5), ("Heike", "Last Week", "Fri", [8,12,13], 30, 3),
-        
-        # Ilana
-        ("Ilana", "This Quarter", "Mon", list(range(8,13)), 25, 12), ("Ilana", "This Quarter", "Tue", list(range(9,16)), 25, 10), ("Ilana", "This Quarter", "Wed", list(range(9,17)), 25, 11), ("Ilana", "This Quarter", "Thu", list(range(9,16)), 20, 9), ("Ilana", "This Quarter", "Fri", [11], 15, 4),
-        ("Ilana", "Last Week", "Wed", [11, 12], 25, 4),
-        
-        # Jessica
-        ("Jessica", "This Quarter", "Mon", list(range(10,18)), 25, 7), ("Jessica", "This Quarter", "Tue", list(range(9,17)), 30, 6), ("Jessica", "This Quarter", "Wed", list(range(9,18)), 25, 7), ("Jessica", "This Quarter", "Thu", list(range(10,16)), 25, 6), ("Jessica", "This Quarter", "Fri", [11, 13, 14, 16], 20, 6),
-        ("Jessica", "Last Week", "Mon", [10,11,12,13,14], 25, 7), ("Jessica", "Last Week", "Tue", [10,11,13], 30, 4), ("Jessica", "Last Week", "Wed", [10], 25, 8), ("Jessica", "Last Week", "Thu", [13, 14], 30, 9), ("Jessica", "Last Week", "Fri", [11, 13, 14], 20, 4),
-        
-        # Laura (Strictly matching requested QTR & Week mapping)
-        ("Laura", "This Quarter", "Mon", [10, 11, 17], 20, 2), ("Laura", "This Quarter", "Wed", [7], 20, 2), ("Laura", "This Quarter", "Thu", [7, 8, 9], 20, 3), ("Laura", "This Quarter", "Fri", list(range(10,18)), 25, 4),
-        ("Laura", "Last Week", "Tue", [16, 18, 20, 21, 23], 15, 2), ("Laura", "Last Week", "Wed", [11, 16, 18, 20, 21, 23], 10, 2), ("Laura", "Last Week", "Thu", [0, 14, 15, 16, 17, 21, 22, 23], 20, 3), 
-        
-        # Lea
-        ("Lea", "This Quarter", "Mon", list(range(10,18)), 25, 8), ("Lea", "This Quarter", "Tue", list(range(9,18)), 25, 7), ("Lea", "This Quarter", "Wed", list(range(9,18)), 20, 7), ("Lea", "This Quarter", "Thu", list(range(10,19)), 20, 6), ("Lea", "This Quarter", "Fri", list(range(11,17)), 15, 5),
-        ("Lea", "Last Week", "Mon", [10, 11, 12, 13, 14, 16, 17], 20, 4), ("Lea", "Last Week", "Tue", [11], 15, 3), ("Lea", "Last Week", "Wed", [12, 13, 17], 15, 5), ("Lea", "Last Week", "Thu", [11, 12, 15, 16], 30, 6), ("Lea", "Last Week", "Fri", [11], 20, 4),
-        
-        # Max (Identical QTR & Week)
-        ("Max", "This Quarter", "Tue", [19], 25, 3), ("Max", "This Quarter", "Wed", [14, 17, 18, 21], 15, 3), ("Max", "This Quarter", "Thu", [19], 30, 3), ("Max", "This Quarter", "Fri", [18], 25, 3),
-        ("Max", "Last Week", "Tue", [19], 25, 3), ("Max", "Last Week", "Wed", [14, 17, 18, 21], 15, 3), ("Max", "Last Week", "Thu", [19], 30, 3), ("Max", "Last Week", "Fri", [18], 25, 3),
-        
-        # Rozanne
-        ("Rozanne", "This Quarter", "Tue", [16, 17, 18, 22, 23], 25, 5), ("Rozanne", "This Quarter", "Wed", [11, 16, 17, 18, 19, 20, 23], 20, 6), ("Rozanne", "This Quarter", "Thu", [0, 14, 15, 16, 17, 21, 22, 23], 15, 7),
-        ("Rozanne", "Last Week", "Thu", [14, 21, 23], 20, 4)
-    ]
+    heatmap_data = []
+    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
     
-    for sdr, tf, day, hours, calls, conn in hm_input:
-        for h in hours:
-            heatmap_raw.append((sdr, tf, day, h, calls, conn))
+    for _, row in df_raw.iterrows():
+        sdr = row['SDR']
+        week = row['Week']
+        
+        # Convert "2:00 PM" into integer 14 for the engine
+        time_str = str(row['Hour'])
+        try:
+            hour_int = int(pd.to_datetime(time_str, format='%I:%M %p').strftime('%H'))
+        except:
+            continue
             
-    return pd.DataFrame(heatmap_raw, columns=["SDR", "Timeframe", "Day", "Hour", "Calls", "Connect %"])
+        for day in days:
+            cell_val = str(row.get(day, 'nan'))
+            if cell_val != 'nan' and '/' in cell_val:
+                try:
+                    calls, connects = cell_val.split('/')
+                    calls = int(calls)
+                    connects = int(connects)
+                    
+                    if calls > 0:
+                        conn_rate = round((connects / calls) * 100, 1)
+                        # We map the full day names back to 3 letters for the chart
+                        heatmap_data.append((sdr, week, day[:3], hour_int, calls, conn_rate))
+                except:
+                    continue
+                    
+    df_heat = pd.DataFrame(heatmap_data, columns=["SDR", "Week", "Day", "Hour", "Calls", "Connect %"])
+    
+    # --- The Auto-Aggregating Magic ---
+    # This automatically builds "This Quarter" and "Last Week" on the fly!
+    final_heat = []
+    
+    # 1. Build "This Quarter" (Sums everything for an SDR)
+    qtr_agg = df_heat.groupby(['SDR', 'Day', 'Hour']).agg({'Calls':'sum', 'Connect %':'mean'}).reset_index()
+    qtr_agg['Timeframe'] = 'This Quarter'
+    final_heat.append(qtr_agg)
+    
+    # 2. Build "Last Week" (Finds the most recent week for each SDR)
+    for sdr in df_heat['SDR'].unique():
+        sdr_weeks = df_heat[df_heat['SDR'] == sdr]['Week'].unique()
+        if len(sdr_weeks) > 0:
+            # Assumes the newest week is typed last in the spreadsheet
+            latest_week = sdr_weeks[-1] 
+            lw_data = df_heat[(df_heat['SDR'] == sdr) & (df_heat['Week'] == latest_week)].copy()
+            lw_data['Timeframe'] = 'Last Week'
+            final_heat.append(lw_data)
+            
+    if final_heat:
+        return pd.concat(final_heat, ignore_index=True)
+    else:
+        return pd.DataFrame(columns=["SDR", "Timeframe", "Day", "Hour", "Calls", "Connect %"])
 
-df = load_data()
 df_heat = load_heatmap_data()
 
 # --- TIMEZONE SHIFT ENGINE ---

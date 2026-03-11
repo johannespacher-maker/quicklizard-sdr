@@ -243,13 +243,14 @@ elif view == "🔍 Individual Deep Dive":
 
         heat_col1, heat_col2 = st.columns(2)
         
-        q_data = sdr_heatmap_data[sdr_heatmap_data["Timeframe"] == "This Quarter"]
+      q_data = sdr_heatmap_data[sdr_heatmap_data["Timeframe"] == "This Quarter"]
         if not q_data.empty:
             fig_q = px.scatter(
                 q_data, x="Hour", y="Day", size="Calls", color="Connect Tier", 
                 color_discrete_map=tier_colors, 
                 category_orders={"Day": all_days, "Connect Tier": tier_order},
-                title=f"This Quarter ({selected_tz.split(' ')[0]})"
+                title=f"This Quarter ({selected_tz.split(' ')[0]})",
+                hover_data={"Connect %": True, "Connect Tier": False}
             )
             fig_q.update_xaxes(range=[-0.5, 23.5], tickvals=list(range(24)), ticktext=[f"{h%12 if h%12!=0 else 12} {'AM' if h<12 else 'PM'}" for h in range(24)])
             heat_col1.plotly_chart(fig_q, use_container_width=True)
@@ -260,7 +261,8 @@ elif view == "🔍 Individual Deep Dive":
                 w_data, x="Hour", y="Day", size="Calls", color="Connect Tier", 
                 color_discrete_map=tier_colors, 
                 category_orders={"Day": all_days, "Connect Tier": tier_order},
-                title=f"Last Week ({selected_tz.split(' ')[0]})"
+                title=f"Last Week ({selected_tz.split(' ')[0]})",
+                hover_data={"Connect %": True, "Connect Tier": False}
             )
             fig_w.update_xaxes(range=[-0.5, 23.5], tickvals=list(range(24)), ticktext=[f"{h%12 if h%12!=0 else 12} {'AM' if h<12 else 'PM'}" for h in range(24)])
             heat_col2.plotly_chart(fig_w, use_container_width=True)

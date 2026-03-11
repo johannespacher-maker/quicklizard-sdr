@@ -191,7 +191,7 @@ elif view == "🔍 Individual Deep Dive":
     with row2_col1: st.plotly_chart(px.line(sdr_data, x="Week", y="Calls Logged", title="Calls Logged 🦎", markers=True, color_discrete_sequence=[ql_green]), use_container_width=True)
     with row2_col2: st.plotly_chart(px.line(sdr_data, x="Week", y="Connect %", title="Connected Calls % 🦎", markers=True, color_discrete_sequence=[ql_green]), use_container_width=True)
 
-    # --- HEATMAP VISUALIZATION ---
+# --- HEATMAP VISUALIZATION ---
     st.markdown("---")
     st.subheader("⏱️ Optimal Calling Windows (Mon - Fri)")
     
@@ -207,28 +207,61 @@ elif view == "🔍 Individual Deep Dive":
         if tz_offset != 0:
             sdr_heatmap_data[["Day", "Hour"]] = sdr_heatmap_data.apply(lambda r: shift_timezone(r, tz_offset), axis=1)
 
+        # 1. Custom Connect % Buckets Logic
+        def get_connect_tier(val):
+            if val <= 5.0: return "0-5%"
+            elif val <= 10.0: return "5-10%"
+            elif val <= 15.0: return "10-15%"
+            elif val <= 20.0: return "15-20%"
+            elif val <= 30.0: return "20-30%"
+            elif val <= 50.0: return "30-50%"
+            else: return "50-100%"
+
+        sdr_heatmap_data["Connect Tier"] = sdr_heatmap_data["Connect %"].apply(get_connect_tier)
+
+        # 2. Custom Color Palette Mapping
+        tier_colors = {
+            "0-5%": "#e6f4ea",     # Faint mint
+            "5-10%": "#a8dab5",    # Light green
+            "10-15%": "#6cc08b",   # Soft green
+            "15-20%": "#27ae60",   # Quicklizard Brand Green
+            "20-30%": "#1e8449",   # Darker green
+            "30-50%": "#145a32",   # Deep forest green
+            "50-100%": "#082614"   # Almost black-green
+        }
+        tier_order = ["0-5%", "5-10%", "10-15%", "15-20%", "20-30%", "30-50%", "50-100%"]
+
         # FORCE MON-FRI Y-AXIS AND 24HR X-AXIS
         all_days = ["Fri", "Thu", "Wed", "Tue", "Mon"] 
-        sdr_heatmap_data = sdr_heatmap_data[sdr_heatmap_data["Day"].isin(all_days)] # Strip out weekends entirely
+        sdr_heatmap_data = sdr_heatmap_data[sdr_heatmap_data["Day"].isin(all_days)]
         
         dummy_data = []
         for d in all_days:
-            dummy_data.append({"SDR": selected_sdr, "Timeframe": "This Quarter", "Day": d, "Hour": -10, "Calls": 0, "Connect %": 0})
-            dummy_data.append({"SDR": selected_sdr, "Timeframe": "Last Week", "Day": d, "Hour": -10, "Calls": 0, "Connect %": 0})
+            dummy_data.append({"SDR": selected_sdr, "Timeframe": "This Quarter", "Day": d, "Hour": -10, "Calls": 0, "Connect %": 0, "Connect Tier": "0-5%"})
+            dummy_data.append({"SDR": selected_sdr, "Timeframe": "Last Week", "Day": d, "Hour": -10, "Calls": 0, "Connect %": 0, "Connect Tier": "0-5%"})
         sdr_heatmap_data = pd.concat([sdr_heatmap_data, pd.DataFrame(dummy_data)], ignore_index=True)
 
         heat_col1, heat_col2 = st.columns(2)
-        ql_greens = ["#a1d9b3", "#27ae60", "#0b4a24"] 
         
         q_data = sdr_heatmap_data[sdr_heatmap_data["Timeframe"] == "This Quarter"]
         if not q_data.empty:
-            fig_q = px.scatter(q_data, x="Hour", y="Day", size="Calls", color="Connect %", color_continuous_scale=ql_greens, title=f"This Quarter ({selected_tz.split(' ')[0]})", category_orders={"Day": all_days})
+            fig_q = px.scatter(
+                q_data, x="Hour", y="Day", size="Calls", color="Connect Tier", 
+                color_discrete_map=tier_colors, 
+                category_orders={"Day": all_days, "Connect Tier": tier_order},
+                title=f"This Quarter ({selected_tz.split(' ')[0]})"
+            )
             fig_q.update_xaxes(range=[-0.5, 23.5], tickvals=list(range(24)), ticktext=[f"{h%12 if h%12!=0 else 12} {'AM' if h<12 else 'PM'}" for h in range(24)])
             heat_col1.plotly_chart(fig_q, use_container_width=True)
             
         w_data = sdr_heatmap_data[sdr_heatmap_data["Timeframe"] == "Last Week"]
         if not w_data.empty:
-            fig_w = px.scatter(w_data, x="Hour", y="Day", size="Calls", color="Connect %", color_continuous_scale=ql_greens, title=f"Last Week ({selected_tz.split(' ')[0]})", category_orders={"Day": all_days})
+            fig_w = px.scatter(
+                w_data, x="Hour", y="Day", size="Calls", color="Connect Tier", 
+                color_discrete_map=tier_colors, 
+                category_orders={"Day": all_days, "Connect Tier": tier_order},
+                title=f"Last Week ({selected_tz.split(' ')[0]})"
+            )
             fig_w.update_xaxes(range=[-0.5, 23.5], tickvals=list(range(24)), ticktext=[f"{h%12 if h%12!=0 else 12} {'AM' if h<12 else 'PM'}" for h in range(24)])
             heat_col2.plotly_chart(fig_w, use_container_width=True)
 

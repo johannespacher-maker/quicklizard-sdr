@@ -191,6 +191,32 @@ elif view == "🔍 Individual Deep Dive":
     with row2_col1: st.plotly_chart(px.line(sdr_data, x="Week", y="Calls Logged", title="Calls Logged 🦎", markers=True, color_discrete_sequence=[ql_green]), use_container_width=True)
     with row2_col2: st.plotly_chart(px.line(sdr_data, x="Week", y="Connect %", title="Connected Calls % 🦎", markers=True, color_discrete_sequence=[ql_green]), use_container_width=True)
 
+# --- EMAIL & CONVERSION METRICS ---
+        st.markdown("---")
+        st.subheader("📧 Email & Conversion Stats")
+        
+        # Grabs the SDR's data from your main 'Weekly Data' tab (df)
+        sdr_main_data = df[df["SDR"] == selected_sdr]
+        
+        if not sdr_main_data.empty:
+            metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(4)
+            
+            # IMPORTANT: If your exact column names in Google Sheets are different 
+            # (e.g., "Total Emails" instead of "Emails Sent"), just change the text inside the brackets below!
+            try:
+                total_emails = sdr_main_data["Emails Sent"].sum()
+                avg_open = sdr_main_data["Open %"].mean()
+                avg_reply = sdr_main_data["Reply %"].mean()
+                total_meetings = sdr_main_data["Meetings"].sum()
+                
+                metric_col1.metric("Emails Sent (Total)", f"{total_emails:,.0f}")
+                metric_col2.metric("Avg Open Rate", f"{avg_open:.1f}%")
+                metric_col3.metric("Avg Reply Rate", f"{avg_reply:.1f}%")
+                metric_col4.metric("Meetings Booked", f"{total_meetings:,.0f}")
+                
+            except KeyError as e:
+                st.warning(f"⚠️ Quick fix needed: I couldn't find the column {e} in your Weekly Data tab. Just update the name in the code to match your spreadsheet exactly!")
+
 # --- HEATMAP VISUALIZATION ---
     st.markdown("---")
     st.subheader("⏱️ Optimal Calling Windows (Mon - Fri)")

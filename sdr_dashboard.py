@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go  # We need this for the beautiful Target Gauge
 
 # --- PAGE SETUP ---
 st.set_page_config(page_title="Quicklizard SDR Dashboard", page_icon="🦎", layout="wide")
@@ -135,6 +136,15 @@ def load_projects_data():
     return projects_dict
 
 projects_data = load_projects_data()
+
+# --- CONFERENCES DATA ENGINE ---
+@st.cache_data(ttl=600)
+def load_conference_data():
+    # Paste your NEW link for the Conferences tab right here between the quotes!
+    conf_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRPoua2HZBuFO4OqvrxjB7MOk5B9Sy_nHJKOvMckok97mAKZKFB2nteZPPRv56opZD2i0JpGuJhsQsl/pub?gid=1297186162&single=true&output=csv" 
+    return pd.read_csv(conf_url)
+
+conf_df = load_conference_data()
 
 # --- SIDEBAR NAVIGATION ---
 st.sidebar.title("🦎 Quicklizard Menu")
@@ -299,3 +309,73 @@ elif view == "🚀 Special Projects":
         st.markdown(projects_data[project])
     else:
         st.info("Special Projects data not found. Please check your Google Sheets connection.")
+
+# --- VIEW 5: EVENT TARGETS ---
+elif view == "🎟️ Event Targets":
+    st.header("🎟️ Conference Target Tracker")
+    
+    # 1. Custom City Themes (Emoji, Bar Color, Background Color)
+    city_themes = {
+        "NRF New York": {"emoji": "🗽", "color": "#3498db", "bg": "#ebf5fb"},        # Big Apple Blue
+        "ShopTalk Las Vegas": {"emoji": "🎰", "color": "#e74c3c", "bg": "#fdedec"},  # Neon Red
+        "RetailTech London": {"emoji": "🎡", "color": "#9b59b6", "bg": "#f5eef8"},    # Royal Purple
+        "ShopTalk Barcelona": {"emoji": "💃", "color": "#f1c40f", "bg": "#fef9e7"},  # Sunny Yellow
+        "K5 Berlin": {"emoji": "🥨", "color": "#e67e22", "bg": "#fdf2e9"}             # Warm Orange
+    }
+    
+    # 2. Select Event & Filter Data
+    selected_conf = st.selectbox("Select Conference:", conf_df["Conference"].unique())
+    conf_data = conf_df[conf_df["Conference"] == selected_conf]
+    
+    # Calculate current progress
+    total_booked = conf_data["Meetings Booked"].sum()
+    target = conf_data["Target"].iloc[0]
+    
+    # Grab the theme for the selected city (defaults to QL Green if city not in dictionary)
+    theme = city_themes.get(selected_conf, {"emoji": "🎯", "color": "#27ae60", "bg": "#eafaf1"})
+    
+    st.markdown("---")
+    col1, col2 = st.columns([1, 1.5])
+    
+    with col1:
+        # 3. The Customized Target Gauge
+        fig_gauge = go.Figure(go.Indicator(
+            mode="gauge+number",
+            value=total_booked,
+            number={'suffix': f" / {target}", 'font': {'size': 40}},
+            title={'text': f"{theme['emoji']} {selected_conf} Progress", 'font': {'size': 20}},
+            gauge={
+                'axis': {'range': [0, target], 'tickwidth': 1},
+                'bar': {'color': theme['color']},
+                'bgcolor': "white",
+                'borderwidth': 2,
+                'bordercolor': "gray",
+                'steps': [
+                    {'range': [0, target], 'color': theme['bg']} # Light background based on city
+                ],
+            }
+        ))
+        fig_gauge.update_layout(height=380, margin=dict(l=20, r=20, t=50, b=20))
+        st.plotly_chart(fig_gauge, use_container_width=True)
+        
+    with col2:
+        # 4. SDR Leaderboard Chart
+        # Filter out SDRs with 0 meetings so the chart only shows those who contributed
+        leaderboard_data = conf_data[conf_data["Meetings Booked"] > 0].sort_values(by="Meetings Booked", ascending=False)
+        
+        if not leaderboard_data.empty:
+            fig_leader = px.bar(
+                leaderboard_data,
+                x="SDR",
+                y="Meetings Booked",
+                title=f"🏆 Top SDR Contributors",
+                text_auto=True,
+                color="Meetings Booked",
+                # The bar chart colors dynamically adapt to the city's theme!
+                color_continuous_scale=[theme['bg'], theme['color']] 
+            )
+            fig_leader.update_layout(xaxis_title="", yaxis_title="Meetings Booked", height=380, showlegend=False)
+            st.plotly_chart(fig_leader, use_container_width=True)
+        else:
+            # Displays if a brand new event has 0 meetings booked
+            st.warning(f"No meetings booked yet for {selected_conf}. Time to hit the phones! 📞")

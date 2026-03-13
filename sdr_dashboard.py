@@ -148,7 +148,7 @@ conf_df = load_conference_data()
 
 # --- SIDEBAR NAVIGATION ---
 st.sidebar.title("🦎 Quicklizard Menu")
-view = st.sidebar.radio("Go to:", ["🏆 Team Overview & Rankings", "🔍 Individual Deep Dive", "🗣️ 1:1 Coaching Advice", "🚀 Special Projects"])
+view = st.sidebar.radio("Go to:", ["🏆 Team Overview & Rankings", "🔍 Individual Deep Dive", "🗣️ 1:1 Coaching Advice", "🚀 Special Projects", "🎟️ Event Targets"])
 
 def get_quarter(month_str):
     if month_str in ["Jan", "Feb", "Mar"]: return "Q1"

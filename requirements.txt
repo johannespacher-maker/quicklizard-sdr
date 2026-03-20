@@ -2,3 +2,6 @@ streamlit
 pandas
 plotly
 matplotlib
+requests
+gspread
+google-auth

@@ -61,7 +61,7 @@ for page in range(1, 6):
                 if user_id not in unique_users:
                     unique_users[user_id] = f"Dialed phone number: {call.get('to', 'Unknown')}"
 
-# 2. Flip through 5 pages of EMAILS (500 total)
+# 2. Flip through 5 pages of EMAILS
 for page in range(1, 6):
     emails_url = f"https://api.salesloft.com/v2/activities/emails?per_page=100&page={page}"
     emails_response = requests.get(emails_url, headers=headers)
@@ -71,7 +71,9 @@ for page in range(1, 6):
             if 'user' in email and email['user'] is not None and 'id' in email['user']:
                 user_id = email['user']['id']
                 if user_id not in unique_users:
-                    unique_users[user_id] = f"Sent an email to: {email.get('email_address', 'Unknown')}"
+                    # Look for the subject line instead of the email address!
+                    subject = email.get('subject', 'No Subject')
+                    unique_users[user_id] = f"Sent an email with the subject: '{subject}'"
 
 # 3. Print the final massive list
 st.success(f"✅ Deep dive complete! Found {len(unique_users)} unique SDR IDs!")

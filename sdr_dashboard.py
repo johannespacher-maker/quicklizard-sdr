@@ -31,30 +31,34 @@ except KeyError:
     st.error("🚨 Vault Error: Streamlit can't find the SALESLOFT_ACCESS_TOKEN in your Secrets.")
 # ---------------------------
 
-# --- FIND MY SDR IDs ---
-st.subheader("🕵️‍♂️ SDR ID Finder")
+# --- THE ULTIMATE ID DETECTIVE ---
+st.subheader("🕵️‍♂️ The SDR Detective Game")
 
-# Ask Salesloft for a batch of recent calls
+# Ask Salesloft for the most recent calls
 calls_response = requests.get("https://api.salesloft.com/v2/activities/calls?per_page=100", headers=headers)
 
 if calls_response.status_code == 200:
     calls_data = calls_response.json()['data']
     
-    # Dig through the calls and pull out the unique User IDs
-    unique_ids = set()
+    unique_users = {}
+    
+    # Grab the very first call we see for each unique ID
     for call in calls_data:
         if 'user' in call and call['user'] is not None and 'id' in call['user']:
-            unique_ids.add(call['user']['id'])
-            
-    st.success("✅ Found recent activity! Here are the IDs of your active SDRs:")
+            user_id = call['user']['id']
+            # Only save the first phone number we find for them
+            if user_id not in unique_users:
+                unique_users[user_id] = call.get("to", "Unknown Number")
+                
+    st.success("✅ Here is your cheat sheet! Search these phone numbers in Salesloft:")
     
-    # Print them neatly on the dashboard
-    for sdr_id in unique_ids:
-        st.subheader(f"ID: {sdr_id}")
+    # Print it neatly
+    for sdr_id, phone in unique_users.items():
+        st.write(f"**ID {sdr_id}** recently made a call to: **{phone}**")
         
-    st.info("Look at your normal Salesloft dashboard to see who was making calls today, and see if you can match these numbers to your reps!")
+    st.info("💡 Just copy that phone number, paste it into your normal Salesloft search bar, and see whose activity feed it pops up in. That is your SDR!")
 else:
-    st.error("🚨 Failed to pull calls for the detective game.")
+    st.error("🚨 Failed to pull calls.")
 # ---------------------------
 
 # ... (The rest of your existing dashboard code goes down here) ...

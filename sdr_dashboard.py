@@ -31,22 +31,30 @@ except KeyError:
     st.error("🚨 Vault Error: Streamlit can't find the SALESLOFT_ACCESS_TOKEN in your Secrets.")
 # ---------------------------
 
-# --- TEST CALLS DATA ---
-st.subheader("📞 Salesloft Calls Test")
+# --- FIND MY SDR IDs ---
+st.subheader("🕵️‍♂️ SDR ID Finder")
 
-# Ask Salesloft for the recent calls instead of users
-calls_response = requests.get("https://api.salesloft.com/v2/activities/calls", headers=headers)
+# Ask Salesloft for a batch of recent calls
+calls_response = requests.get("https://api.salesloft.com/v2/activities/calls?per_page=100", headers=headers)
 
 if calls_response.status_code == 200:
-    st.success("✅ BOOM! We have access to the SDR Call Data!")
-    # Just show the raw data of the very first call to prove it works
     calls_data = calls_response.json()['data']
-    if len(calls_data) > 0:
-        st.write(calls_data[0])
-    else:
-        st.write("No calls logged recently, but the connection works!")
+    
+    # Dig through the calls and pull out the unique User IDs
+    unique_ids = set()
+    for call in calls_data:
+        if 'user' in call and call['user'] is not None and 'id' in call['user']:
+            unique_ids.add(call['user']['id'])
+            
+    st.success("✅ Found recent activity! Here are the IDs of your active SDRs:")
+    
+    # Print them neatly on the dashboard
+    for sdr_id in unique_ids:
+        st.subheader(f"ID: {sdr_id}")
+        
+    st.info("Look at your normal Salesloft dashboard to see who was making calls today, and see if you can match these numbers to your reps!")
 else:
-    st.error(f"🚨 Failed to pull calls. Status: {calls_response.status_code}")
+    st.error("🚨 Failed to pull calls for the detective game.")
 # ---------------------------
 
 # ... (The rest of your existing dashboard code goes down here) ...

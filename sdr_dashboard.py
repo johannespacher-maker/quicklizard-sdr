@@ -32,12 +32,12 @@ except KeyError:
 # ---------------------------
 
 # --- THE ULTIMATE ID DETECTIVE ---
-st.subheader("🕵️‍♂️ The Deep-Dive Detective (1,000 Activities)")
+st.subheader("🕵️‍♂️ Finding Lea (Deep Archive Detective)")
 
 try:
     ACCESS_TOKEN = st.secrets["SALESLOFT_ACCESS_TOKEN"]
 except KeyError:
-    st.error("🚨 Missing SALESLOFT_ACCESS_TOKEN in Streamlit Secrets.")
+    st.error("🚨 Missing SALESLOFT_ACCESS_TOKEN")
     st.stop()
 
 headers = {
@@ -45,12 +45,14 @@ headers = {
     "Accept": "application/json"
 }
 
-unique_users = {}
+# The 5 mystery IDs
+mystery_ids = [48582, 125323, 71524, 83704, 118647]
+found_calls = {}
 
-st.write("Digging through the archives... this might take a few seconds! ⏳")
+st.write("Searching the last 1,500 calls... please wait 10-15 seconds! ⏳")
 
-# 1. Flip through 5 pages of CALLS (500 total)
-for page in range(1, 6):
+# Flip through 15 pages of CALLS (1,500 total)
+for page in range(1, 16):
     calls_url = f"https://api.salesloft.com/v2/activities/calls?per_page=100&page={page}"
     calls_response = requests.get(calls_url, headers=headers)
     
@@ -58,28 +60,19 @@ for page in range(1, 6):
         for call in calls_response.json().get('data', []):
             if 'user' in call and call['user'] is not None and 'id' in call['user']:
                 user_id = call['user']['id']
-                if user_id not in unique_users:
-                    unique_users[user_id] = f"Dialed phone number: {call.get('to', 'Unknown')}"
+                
+                # If it's one of our mystery IDs and we haven't tracked them yet
+                if user_id in mystery_ids and user_id not in found_calls:
+                    phone_number = call.get('to', 'Unknown Number')
+                    found_calls[user_id] = f"Dialed **{phone_number}**"
 
-# 2. Flip through 5 pages of EMAILS
-for page in range(1, 6):
-    emails_url = f"https://api.salesloft.com/v2/activities/emails?per_page=100&page={page}"
-    emails_response = requests.get(emails_url, headers=headers)
-    
-    if emails_response.status_code == 200:
-        for email in emails_response.json().get('data', []):
-            if 'user' in email and email['user'] is not None and 'id' in email['user']:
-                user_id = email['user']['id']
-                if user_id not in unique_users:
-                    # Look for the subject line instead of the email address!
-                    subject = email.get('subject', 'No Subject')
-                    unique_users[user_id] = f"Sent an email with the subject: '{subject}'"
-
-# 3. Print the final massive list
-st.success(f"✅ Deep dive complete! Found {len(unique_users)} unique SDR IDs!")
-
-for sdr_id, action in unique_users.items():
-    st.write(f"**ID {sdr_id}** recently {action}")
+if found_calls:
+    st.success("✅ Found calls from the archives!")
+    for sdr_id, details in found_calls.items():
+        st.write(f"**Mystery ID {sdr_id}** {details}")
+    st.info("💡 Search those phone numbers in Salesloft to see which one belongs to Lea!")
+else:
+    st.warning("Still no calls found in the last 1,500! Is it possible Lea hasn't made any phone calls recently, or is on vacation?")
 
 # ... (The rest of your existing dashboard code goes down here) ...
 

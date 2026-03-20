@@ -4,75 +4,42 @@ import plotly.express as px
 import plotly.graph_objects as go  # We need this for the beautiful Target Gauge
 import requests  # <-- We added this one to talk to the API!
 
-# --- API CONNECTION TEST ---
-st.subheader("🔌 Salesloft API Status")
+st.title("🔄 The Token Refresh Engine")
 
 try:
-    # 1. Grab the Access Token securely from the Streamlit Vault
-    ACCESS_TOKEN = st.secrets["SALESLOFT_ACCESS_TOKEN"]
-    
-    # 2. Set up the digital ID badge for the request
-    headers = {
-        "Authorization": f"Bearer {ACCESS_TOKEN}",
-        "Accept": "application/json"
-    }
-    
-    # 3. Knock on Salesloft's door
-    response = requests.get("https://api.salesloft.com/v2/me", headers=headers)
-    
-    # 4. Print the result directly onto your dashboard
-    if response.status_code == 200:
-        user_data = response.json()
-        st.success(f"✅ API Connected Successfully! Logged in as: {user_data['data']['name']}")
-    else:
-        st.error(f"🚨 API Connection Failed. Status Code: {response.status_code}")
-        st.write(response.text)
+    CLIENT_ID = st.secrets["SALESLOFT_CLIENT_ID"]
+    CLIENT_SECRET = st.secrets["SALESLOFT_CLIENT_SECRET"]
+    CURRENT_REFRESH_TOKEN = st.secrets["SALESLOFT_REFRESH_TOKEN"]
 except KeyError:
-    st.error("🚨 Vault Error: Streamlit can't find the SALESLOFT_ACCESS_TOKEN in your Secrets.")
-# ---------------------------
-
-# --- THE ULTIMATE ID DETECTIVE ---
-st.subheader("🕵️‍♂️ Finding Lea (Deep Archive Detective)")
-
-try:
-    ACCESS_TOKEN = st.secrets["SALESLOFT_ACCESS_TOKEN"]
-except KeyError:
-    st.error("🚨 Missing SALESLOFT_ACCESS_TOKEN")
+    st.error("🚨 Missing credentials in Streamlit Secrets.")
     st.stop()
 
-headers = {
-    "Authorization": f"Bearer {ACCESS_TOKEN}",
-    "Accept": "application/json"
-}
+st.warning("Clicking the button below will burn your current Refresh Token and generate a new pair.")
 
-# The 5 mystery IDs
-mystery_ids = [48582, 125323, 71524, 83704, 118647]
-found_calls = {}
-
-st.write("Searching the last 1,500 calls... please wait 10-15 seconds! ⏳")
-
-# Flip through 15 pages of CALLS (1,500 total)
-for page in range(1, 16):
-    calls_url = f"https://api.salesloft.com/v2/activities/calls?per_page=100&page={page}"
-    calls_response = requests.get(calls_url, headers=headers)
+if st.button("Generate Fresh Tokens"):
+    st.write("Knocking on Salesloft's door...")
     
-    if calls_response.status_code == 200:
-        for call in calls_response.json().get('data', []):
-            if 'user' in call and call['user'] is not None and 'id' in call['user']:
-                user_id = call['user']['id']
-                
-                # If it's one of our mystery IDs and we haven't tracked them yet
-                if user_id in mystery_ids and user_id not in found_calls:
-                    phone_number = call.get('to', 'Unknown Number')
-                    found_calls[user_id] = f"Dialed **{phone_number}**"
-
-if found_calls:
-    st.success("✅ Found calls from the archives!")
-    for sdr_id, details in found_calls.items():
-        st.write(f"**Mystery ID {sdr_id}** {details}")
-    st.info("💡 Search those phone numbers in Salesloft to see which one belongs to Lea!")
-else:
-    st.warning("Still no calls found in the last 1,500! Is it possible Lea hasn't made any phone calls recently, or is on vacation?")
+    payload = {
+        "client_id": CLIENT_ID,
+        "client_secret": CLIENT_SECRET,
+        "grant_type": "refresh_token",
+        "refresh_token": CURRENT_REFRESH_TOKEN
+    }
+    
+    response = requests.post("https://accounts.salesloft.com/oauth/token", data=payload)
+    
+    if response.status_code == 200:
+        new_keys = response.json()
+        st.success("✅ Success! Your new tokens are below.")
+        
+        st.info("🚨 IMPORTANT: Copy these right now and update your Streamlit Secrets Vault, or your app will break on the next run!")
+        
+        st.code(f'SALESLOFT_ACCESS_TOKEN = "{new_keys["access_token"]}"', language='toml')
+        st.code(f'SALESLOFT_REFRESH_TOKEN = "{new_keys["refresh_token"]}"', language='toml')
+        
+    else:
+        st.error(f"🚨 Failed to refresh. Status: {response.status_code}")
+        st.write(response.text)
 
 # ... (The rest of your existing dashboard code goes down here) ...
 

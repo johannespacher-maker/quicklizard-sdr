@@ -3,43 +3,70 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go  # We need this for the beautiful Target Gauge
 import requests  # <-- We added this one to talk to the API!
+import gspread
+from google.oauth2.service_account import Credentials
+import json
 
-st.title("🔄 The Token Refresh Engine")
+st.title("⚙️ The Master Engine: Google + Salesloft")
+
+st.write("Waking up the bot and checking the memory bank...")
 
 try:
+    # 1. Connect to Google Sheets using the Vault Key
+    scopes = [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive"
+    ]
+    creds_dict = json.loads(st.secrets["GOOGLE_CREDENTIALS"])
+    creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+    gc = gspread.authorize(creds)
+    
+    # 2. Open your specific Google Sheet
+    SHEET_URL = "https://docs.google.com/spreadsheets/d/1OySLhZjJk1ArFdbdgtBukO5vKNJTOAZ-A7EM_peXY2g/edit?gid=1131178816#gid=1131178816" # <--- PASTE YOUR LINK HERE
+    sh = gc.open_by_url(SHEET_URL)
+    
+    # 3. Open the Memory Tab and grab the current token
+    auth_sheet = sh.worksheet("System_Auth")
+    current_refresh_token = auth_sheet.acell('B1').value
+    
+    st.success("✅ Successfully read the Refresh Token from Google Sheets!")
+    st.write("Now knocking on Salesloft's door to trade it for a new one...")
+
+    # 4. Ask Salesloft for new tokens
     CLIENT_ID = st.secrets["SALESLOFT_CLIENT_ID"]
     CLIENT_SECRET = st.secrets["SALESLOFT_CLIENT_SECRET"]
-    CURRENT_REFRESH_TOKEN = st.secrets["SALESLOFT_REFRESH_TOKEN"]
-except KeyError:
-    st.error("🚨 Missing credentials in Streamlit Secrets.")
-    st.stop()
 
-st.warning("Clicking the button below will burn your current Refresh Token and generate a new pair.")
-
-if st.button("Generate Fresh Tokens"):
-    st.write("Knocking on Salesloft's door...")
-    
     payload = {
         "client_id": CLIENT_ID,
         "client_secret": CLIENT_SECRET,
         "grant_type": "refresh_token",
-        "refresh_token": CURRENT_REFRESH_TOKEN
+        "refresh_token": current_refresh_token
     }
-    
+
     response = requests.post("https://accounts.salesloft.com/oauth/token", data=payload)
-    
+
     if response.status_code == 200:
         new_keys = response.json()
-        st.success("✅ Success! Your new tokens are below.")
+        new_access_token = new_keys["access_token"]
+        new_refresh_token = new_keys["refresh_token"]
+
+        # 5. Write the NEW refresh token back to Google Sheets!
+        auth_sheet.update_acell('B1', new_refresh_token)
+        st.success("✅ BOOM! Wrote the new password back into Google Sheets safely.")
+
+        # 6. Test the new Access Token to prove it works
+        headers = {"Authorization": f"Bearer {new_access_token}", "Accept": "application/json"}
+        me_response = requests.get("https://api.salesloft.com/v2/me", headers=headers)
         
-        st.info("🚨 IMPORTANT: Copy these right now and update your Streamlit Secrets Vault, or your app will break on the next run!")
-        
-        st.code(f'SALESLOFT_ACCESS_TOKEN = "{new_keys["access_token"]}"', language='toml')
-        st.code(f'SALESLOFT_REFRESH_TOKEN = "{new_keys["refresh_token"]}"', language='toml')
-        
+        if me_response.status_code == 200:
+            st.success("✅ Salesloft Live API Connected perfectly!")
+            st.balloons() # Let's celebrate, you earned this.
     else:
-        st.error(f"🚨 Failed to refresh. Status: {response.status_code}")
+        st.error(f"🚨 Token refresh failed. Status: {response.status_code}")
         st.write(response.text)
+
+except Exception as e:
+    st.error(f"🚨 Something went wrong: {e}")
 
 # ... (The rest of your existing dashboard code goes down here) ...
 

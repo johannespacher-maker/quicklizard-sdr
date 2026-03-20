@@ -32,34 +32,52 @@ except KeyError:
 # ---------------------------
 
 # --- THE ULTIMATE ID DETECTIVE ---
-st.subheader("🕵️‍♂️ The SDR Detective Game")
+st.subheader("🕵️‍♂️ The Deep-Dive Detective (1,000 Activities)")
 
-# Ask Salesloft for the most recent calls
-calls_response = requests.get("https://api.salesloft.com/v2/activities/calls?per_page=100", headers=headers)
+try:
+    ACCESS_TOKEN = st.secrets["SALESLOFT_ACCESS_TOKEN"]
+except KeyError:
+    st.error("🚨 Missing SALESLOFT_ACCESS_TOKEN in Streamlit Secrets.")
+    st.stop()
 
-if calls_response.status_code == 200:
-    calls_data = calls_response.json()['data']
+headers = {
+    "Authorization": f"Bearer {ACCESS_TOKEN}",
+    "Accept": "application/json"
+}
+
+unique_users = {}
+
+st.write("Digging through the archives... this might take a few seconds! ⏳")
+
+# 1. Flip through 5 pages of CALLS (500 total)
+for page in range(1, 6):
+    calls_url = f"https://api.salesloft.com/v2/activities/calls?per_page=100&page={page}"
+    calls_response = requests.get(calls_url, headers=headers)
     
-    unique_users = {}
+    if calls_response.status_code == 200:
+        for call in calls_response.json().get('data', []):
+            if 'user' in call and call['user'] is not None and 'id' in call['user']:
+                user_id = call['user']['id']
+                if user_id not in unique_users:
+                    unique_users[user_id] = f"Dialed phone number: {call.get('to', 'Unknown')}"
+
+# 2. Flip through 5 pages of EMAILS (500 total)
+for page in range(1, 6):
+    emails_url = f"https://api.salesloft.com/v2/activities/emails?per_page=100&page={page}"
+    emails_response = requests.get(emails_url, headers=headers)
     
-    # Grab the very first call we see for each unique ID
-    for call in calls_data:
-        if 'user' in call and call['user'] is not None and 'id' in call['user']:
-            user_id = call['user']['id']
-            # Only save the first phone number we find for them
-            if user_id not in unique_users:
-                unique_users[user_id] = call.get("to", "Unknown Number")
-                
-    st.success("✅ Here is your cheat sheet! Search these phone numbers in Salesloft:")
-    
-    # Print it neatly
-    for sdr_id, phone in unique_users.items():
-        st.write(f"**ID {sdr_id}** recently made a call to: **{phone}**")
-        
-    st.info("💡 Just copy that phone number, paste it into your normal Salesloft search bar, and see whose activity feed it pops up in. That is your SDR!")
-else:
-    st.error("🚨 Failed to pull calls.")
-# ---------------------------
+    if emails_response.status_code == 200:
+        for email in emails_response.json().get('data', []):
+            if 'user' in email and email['user'] is not None and 'id' in email['user']:
+                user_id = email['user']['id']
+                if user_id not in unique_users:
+                    unique_users[user_id] = f"Sent an email to: {email.get('email_address', 'Unknown')}"
+
+# 3. Print the final massive list
+st.success(f"✅ Deep dive complete! Found {len(unique_users)} unique SDR IDs!")
+
+for sdr_id, action in unique_users.items():
+    st.write(f"**ID {sdr_id}** recently {action}")
 
 # ... (The rest of your existing dashboard code goes down here) ...
 

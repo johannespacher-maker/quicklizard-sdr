@@ -31,22 +31,22 @@ except KeyError:
     st.error("🚨 Vault Error: Streamlit can't find the SALESLOFT_ACCESS_TOKEN in your Secrets.")
 # ---------------------------
 
-# --- GET USER IDs ---
-st.subheader("👥 Salesloft Team IDs")
+# --- TEST CALLS DATA ---
+st.subheader("📞 Salesloft Calls Test")
 
-# Ask Salesloft for the list of users
-users_response = requests.get("https://api.salesloft.com/v2/users.json", headers=headers)
+# Ask Salesloft for the recent calls instead of users
+calls_response = requests.get("https://api.salesloft.com/v2/activities/calls", headers=headers)
 
-if users_response.status_code == 200:
-    users_data = users_response.json()['data']
-    
-    # Extract just the ID and Name for a clean table
-    user_list = [{"Salesloft ID": user['id'], "Name": f"{user['first_name']} {user['last_name']}"} for user in users_data]
-    
-    # Show it on the dashboard!
-    st.dataframe(user_list)
+if calls_response.status_code == 200:
+    st.success("✅ BOOM! We have access to the SDR Call Data!")
+    # Just show the raw data of the very first call to prove it works
+    calls_data = calls_response.json()['data']
+    if len(calls_data) > 0:
+        st.write(calls_data[0])
+    else:
+        st.write("No calls logged recently, but the connection works!")
 else:
-    st.error(f"🚨 Failed to pull users. Status: {users_response.status_code}")
+    st.error(f"🚨 Failed to pull calls. Status: {calls_response.status_code}")
 # ---------------------------
 
 # ... (The rest of your existing dashboard code goes down here) ...

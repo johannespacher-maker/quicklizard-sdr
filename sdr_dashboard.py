@@ -31,6 +31,24 @@ except KeyError:
     st.error("🚨 Vault Error: Streamlit can't find the SALESLOFT_ACCESS_TOKEN in your Secrets.")
 # ---------------------------
 
+# --- GET USER IDs ---
+st.subheader("👥 Salesloft Team IDs")
+
+# Ask Salesloft for the list of users
+users_response = requests.get("https://api.salesloft.com/v2/users.json", headers=headers)
+
+if users_response.status_code == 200:
+    users_data = users_response.json()['data']
+    
+    # Extract just the ID and Name for a clean table
+    user_list = [{"Salesloft ID": user['id'], "Name": f"{user['first_name']} {user['last_name']}"} for user in users_data]
+    
+    # Show it on the dashboard!
+    st.dataframe(user_list)
+else:
+    st.error(f"🚨 Failed to pull users. Status: {users_response.status_code}")
+# ---------------------------
+
 # ... (The rest of your existing dashboard code goes down here) ...
 
 # --- PAGE SETUP ---

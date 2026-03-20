@@ -2,6 +2,36 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go  # We need this for the beautiful Target Gauge
+import requests  # <-- We added this one to talk to the API!
+
+# --- API CONNECTION TEST ---
+st.subheader("🔌 Salesloft API Status")
+
+try:
+    # 1. Grab the Access Token securely from the Streamlit Vault
+    ACCESS_TOKEN = st.secrets["SALESLOFT_ACCESS_TOKEN"]
+    
+    # 2. Set up the digital ID badge for the request
+    headers = {
+        "Authorization": f"Bearer {ACCESS_TOKEN}",
+        "Accept": "application/json"
+    }
+    
+    # 3. Knock on Salesloft's door
+    response = requests.get("https://api.salesloft.com/v2/me", headers=headers)
+    
+    # 4. Print the result directly onto your dashboard
+    if response.status_code == 200:
+        user_data = response.json()
+        st.success(f"✅ API Connected Successfully! Logged in as: {user_data['data']['name']}")
+    else:
+        st.error(f"🚨 API Connection Failed. Status Code: {response.status_code}")
+        st.write(response.text)
+except KeyError:
+    st.error("🚨 Vault Error: Streamlit can't find the SALESLOFT_ACCESS_TOKEN in your Secrets.")
+# ---------------------------
+
+# ... (The rest of your existing dashboard code goes down here) ...
 
 # --- PAGE SETUP ---
 st.set_page_config(page_title="Quicklizard SDR Dashboard", page_icon="🦎", layout="wide")

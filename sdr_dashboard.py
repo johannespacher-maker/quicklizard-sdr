@@ -369,10 +369,10 @@ elif view == "🎟️ Event Targets":
         else:
             st.warning(f"No meetings booked yet for {selected_conf}. Time to hit the phones! 📞")
 
-# --- VIEW 6: DATA SYNC CENTER (THE NEW MAGIC PORTAL) ---
+# --- VIEW 6: DATA SYNC CENTER (THE SMART MONDAY PORTAL) ---
 elif view == "🔄 Data Sync Center":
-    st.header("🔄 Salesloft API Data Sync")
-    st.info("This portal safely pulls your live Salesloft data for the current week and preps it for your Data Archive.")
+    st.header("🔄 Smart Monday Data Sync")
+    st.info("This portal safely pulls last week's Salesloft data and preps it for your Data Archive. It protects against duplicates!")
     
     sdr_mapping = {
         125597: "Heike", 125115: "Ilana", 96132: "Aiko", 107027: "Laura",
@@ -380,11 +380,27 @@ elif view == "🔄 Data Sync Center":
         96130: "Rozanne", 118647: "Lea"
     }
     
-    if st.button("Pull Live Data Now"):
-        with st.spinner("Knocking on Salesloft's door..."):
-            # Set the filter to pull everything from the start of the week (or adjust to today as needed)
-            today_str = datetime.utcnow().strftime('%Y-%m-%dT00:00:00Z')
-            date_filter = f"?created_at[gte]={today_str}&per_page=100"
+    import datetime as dt
+    
+    # 1. Time Travel: Calculate exactly what "Last Week" was (Monday to Sunday)
+    today = dt.date.today()
+    last_monday = today - dt.timedelta(days=today.weekday() + 7)
+    last_sunday = last_monday + dt.timedelta(days=6)
+    
+    # Format dates for the API (UTC)
+    start_str = last_monday.strftime('%Y-%m-%dT00:00:00Z')
+    end_str = last_sunday.strftime('%Y-%m-%dT23:59:59Z')
+    
+    # Create the "Week" label to match your historic data (e.g., "Mar - W4")
+    week_num = (last_monday.day - 1) // 7 + 1
+    month_abbr = last_monday.strftime('%b')
+    week_label = f"{month_abbr} - W{week_num}"
+    
+    st.write(f"**Target Sync Window:** {last_monday.strftime('%B %d')} to {last_sunday.strftime('%B %d')} ({week_label})")
+    
+    if st.button("Fetch Last Week's Data"):
+        with st.spinner("Digging through the Salesloft archives..."):
+            date_filter = f"?created_at[gte]={start_str}&created_at[lte]={end_str}&per_page=100"
             
             metrics = {name: {"Calls": 0, "Connected": 0, "Emails": 0, "Replies": 0, "Other": 0} for name in sdr_mapping.values()}
             
@@ -414,26 +430,36 @@ elif view == "🔄 Data Sync Center":
                         name = sdr_mapping[task['user']['id']]
                         metrics[name]["Other"] += 1
 
+            # Format the data EXACTLY like your Google Sheet
             data_list = []
             for name, m in metrics.items():
                 total_activities = m["Calls"] + m["Emails"] + m["Other"]
                 conn_pct = f"{round((m['Connected'] / m['Calls'] * 100), 1)}%" if m["Calls"] > 0 else "0.0%"
                 reply_pct = f"{round((m['Replies'] / m['Emails'] * 100), 1)}%" if m["Emails"] > 0 else "0.0%"
-                data_list.append([datetime.now().strftime("%Y-%m-%d"), name, total_activities, m["Calls"], conn_pct, m["Emails"], reply_pct, m["Other"]])
+                
+                # Columns: SDR | Week | Total | Calls | Connect% | Emails | Reply% | Meetings Booked (0 by default)
+                data_list.append([name, week_label, total_activities, m["Calls"], conn_pct, m["Emails"], reply_pct, 0])
 
-            st.session_state['live_df'] = pd.DataFrame(data_list, columns=["Date", "SDR Name", "Total Activities", "Calls", "Connection %", "Emails", "Reply %", "LinkedIn / Other"])
-            st.session_state['live_df'] = st.session_state['live_df'].sort_values(by="Total Activities", ascending=False)
+            st.session_state['last_week_df'] = pd.DataFrame(data_list, columns=["SDR", "Week", "Total Activities", "Calls Logged", "Connect %", "Emails Sent", "Reply %", "Meetings Booked"])
+            st.session_state['last_week_df'] = st.session_state['last_week_df'].sort_values(by="Total Activities", ascending=False)
             
-    if 'live_df' in st.session_state:
-        st.success("✅ Data Pulled Successfully!")
-        st.dataframe(st.session_state['live_df'], hide_index=True, use_container_width=True)
+    if 'last_week_df' in st.session_state:
+        st.success("✅ Data Pulled Successfully! Review below before saving.")
+        st.dataframe(st.session_state['last_week_df'], hide_index=True, use_container_width=True)
         
         st.markdown("---")
-        if st.button("Save to Google Sheets (Data_Archive)"):
+        if st.button("Archive to Google Sheets (Safe Sync)"):
             try:
                 archive_sheet = sh.worksheet("Data_Archive")
-                archive_sheet.append_rows(st.session_state['live_df'].values.tolist())
-                st.success("🎉 BOOM! Data permanently saved to the Data_Archive tab in your master Google Sheet.")
-                st.balloons()
+                
+                # DUPLICATION CHECK: Read column B to see if the week_label already exists
+                existing_weeks = archive_sheet.col_values(2) 
+                
+                if week_label in existing_weeks:
+                    st.error(f"🚨 Hold up! It looks like data for '{week_label}' is already in the archive. Sync aborted to prevent duplicates.")
+                else:
+                    archive_sheet.append_rows(st.session_state['last_week_df'].values.tolist())
+                    st.success(f"🎉 BOOM! '{week_label}' permanently saved to the Data_Archive tab.")
+                    st.balloons()
             except Exception as e:
                 st.error(f"Failed to save to Google Sheets: {e}")

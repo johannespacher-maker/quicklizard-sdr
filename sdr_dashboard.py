@@ -399,36 +399,61 @@ elif view == "🔄 Data Sync Center":
     st.write(f"**Target Sync Window:** {last_monday.strftime('%B %d')} to {last_sunday.strftime('%B %d')} ({week_label})")
     
     if st.button("Fetch Last Week's Data"):
-        with st.spinner("Digging through the Salesloft archives..."):
+        with st.spinner("Digging through the Salesloft archives... this might take 10-20 seconds to get everything! ⏳"):
             date_filter = f"?created_at[gte]={start_str}&created_at[lte]={end_str}&per_page=100"
             
             metrics = {name: {"Calls": 0, "Connected": 0, "Emails": 0, "Replies": 0, "Other": 0} for name in sdr_mapping.values()}
             
-            # Use the global headers set at the top of the file
-            calls_res = requests.get(f"https://api.salesloft.com/v2/activities/calls{date_filter}", headers=headers)
-            if calls_res.status_code == 200:
-                for call in calls_res.json().get('data', []):
-                    if call.get('user') and call['user']['id'] in sdr_mapping:
-                        name = sdr_mapping[call['user']['id']]
-                        metrics[name]["Calls"] += 1
-                        if call.get('disposition') == 'Connected':
-                            metrics[name]["Connected"] += 1
+            # --- PAGINATION LOOPS (To catch ALL activities) ---
+            
+            # 1. Fetch ALL Calls
+            page = 1
+            while True:
+                calls_res = requests.get(f"https://api.salesloft.com/v2/activities/calls{date_filter}&page={page}", headers=headers)
+                if calls_res.status_code == 200:
+                    data = calls_res.json().get('data', [])
+                    if not data: break # Stop when the page is empty
+                    for call in data:
+                        if call.get('user') and call['user']['id'] in sdr_mapping:
+                            name = sdr_mapping[call['user']['id']]
+                            metrics[name]["Calls"] += 1
+                            if call.get('disposition') == 'Connected':
+                                metrics[name]["Connected"] += 1
+                    page += 1
+                else:
+                    break
 
-            emails_res = requests.get(f"https://api.salesloft.com/v2/activities/emails{date_filter}", headers=headers)
-            if emails_res.status_code == 200:
-                for email in emails_res.json().get('data', []):
-                    if email.get('user') and email['user']['id'] in sdr_mapping:
-                        name = sdr_mapping[email['user']['id']]
-                        metrics[name]["Emails"] += 1
-                        if email.get('counts', {}).get('replies', 0) > 0:
-                            metrics[name]["Replies"] += 1
+            # 2. Fetch ALL Emails
+            page = 1
+            while True:
+                emails_res = requests.get(f"https://api.salesloft.com/v2/activities/emails{date_filter}&page={page}", headers=headers)
+                if emails_res.status_code == 200:
+                    data = emails_res.json().get('data', [])
+                    if not data: break
+                    for email in data:
+                        if email.get('user') and email['user']['id'] in sdr_mapping:
+                            name = sdr_mapping[email['user']['id']]
+                            metrics[name]["Emails"] += 1
+                            if email.get('counts', {}).get('replies', 0) > 0:
+                                metrics[name]["Replies"] += 1
+                    page += 1
+                else:
+                    break
 
-            tasks_res = requests.get(f"https://api.salesloft.com/v2/tasks{date_filter}&current_state=completed", headers=headers)
-            if tasks_res.status_code == 200:
-                for task in tasks_res.json().get('data', []):
-                    if task.get('user') and task['user']['id'] in sdr_mapping:
-                        name = sdr_mapping[task['user']['id']]
-                        metrics[name]["Other"] += 1
+            # 3. Fetch ALL Tasks
+            page = 1
+            while True:
+                tasks_res = requests.get(f"https://api.salesloft.com/v2/tasks{date_filter}&current_state=completed&page={page}", headers=headers)
+                if tasks_res.status_code == 200:
+                    data = tasks_res.json().get('data', [])
+                    if not data: break
+                    for task in data:
+                        if task.get('user') and task['user']['id'] in sdr_mapping:
+                            name = sdr_mapping[task['user']['id']]
+                            metrics[name]["Other"] += 1
+                    page += 1
+                else:
+                    break
 
             # Format the data EXACTLY like your Google Sheet
             data_list = []
